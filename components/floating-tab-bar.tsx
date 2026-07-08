@@ -7,11 +7,13 @@ import * as React from 'react';
 import { LayoutChangeEvent, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 export const FLOATING_TAB_BAR_HEIGHT = 64;
 export const FLOATING_TAB_BAR_BOTTOM_MARGIN = 12;
 /** Bottom padding screen content should reserve so it doesn't sit under the floating tab bar. */
-export const FLOATING_TAB_BAR_CLEARANCE = FLOATING_TAB_BAR_HEIGHT + FLOATING_TAB_BAR_BOTTOM_MARGIN + 16;
+export const FLOATING_TAB_BAR_CLEARANCE =
+  FLOATING_TAB_BAR_HEIGHT + FLOATING_TAB_BAR_BOTTOM_MARGIN + 16;
 
 const ROW_HORIZONTAL_PADDING = 8;
 const TAB_ITEM_HEIGHT = 48;
@@ -25,6 +27,12 @@ const INDICATOR_COLOR = {
   light: 'rgba(0, 0, 0, 0.09)',
   dark: 'rgba(255, 255, 255, 0.16)',
 };
+const TAB_BAR_FADE_COLOR = {
+  light: '#FFFFFF',
+  dark: '#0A0A0A',
+};
+const TAB_BAR_FADE_EXTRA_HEIGHT = 36;
+const TAB_ICON_SIZE = 25;
 
 // Ionicons ships real outline/filled pairs, so the selected tab can swap the
 // glyph itself instead of faking a "solid" look by filling an outline icon.
@@ -73,7 +81,11 @@ function FloatingTabBarImpl({ state, descriptors, navigation }: BottomTabBarProp
   const handlePress = React.useCallback(
     (routeKey: string, routeName: string) => {
       const isFocused = state.routes[state.index]?.key === routeKey;
-      const event = navigation.emit({ type: 'tabPress', target: routeKey, canPreventDefault: true });
+      const event = navigation.emit({
+        type: 'tabPress',
+        target: routeKey,
+        canPreventDefault: true,
+      });
       if (!isFocused && !event.defaultPrevented) {
         navigation.navigate(routeName);
       }
@@ -88,49 +100,77 @@ function FloatingTabBarImpl({ state, descriptors, navigation }: BottomTabBarProp
     [navigation]
   );
 
-  return (
-    <View pointerEvents="box-none" style={[styles.wrapper, { bottom }]}>
-      <View
-        style={[
-          styles.surface,
-          {
-            backgroundColor: colorScheme === 'dark' ? 'rgba(38, 38, 38, 0.98)' : 'rgba(255, 255, 255, 0.98)',
-            borderColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
-          },
-        ]}>
-        <View style={styles.row} onLayout={onRowLayout}>
-          <Animated.View
-            pointerEvents="none"
-            style={[
-              styles.indicator,
-              indicatorStyle,
-              { backgroundColor: colorScheme === 'dark' ? INDICATOR_COLOR.dark : INDICATOR_COLOR.light },
-            ]}
-          />
-          {state.routes.map((route, index) => {
-            const { options } = descriptors[route.key];
-            const isFocused = state.index === index;
-            const label =
-              typeof options.tabBarLabel === 'string' ? options.tabBarLabel : (options.title ?? route.name);
+  const fadeColor = colorScheme === 'dark' ? TAB_BAR_FADE_COLOR.dark : TAB_BAR_FADE_COLOR.light;
 
-            return (
-              <TabBarButton
-                key={route.key}
-                routeKey={route.key}
-                routeName={route.name}
-                label={label}
-                icon={TAB_ICONS[route.name] ?? DEFAULT_TAB_ICON}
-                isFocused={isFocused}
-                activeColor={theme.foreground}
-                inactiveColor={theme.mutedForeground}
-                onPress={handlePress}
-                onLongPress={handleLongPress}
-              />
-            );
-          })}
+  return (
+    <>
+      <View
+        pointerEvents="none"
+        style={[
+          styles.fade,
+          { height: bottom + FLOATING_TAB_BAR_HEIGHT + TAB_BAR_FADE_EXTRA_HEIGHT },
+        ]}>
+        <Svg width="100%" height="100%" preserveAspectRatio="none" style={StyleSheet.absoluteFill}>
+          <Defs>
+            <LinearGradient id="tab-bar-fade" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor={fadeColor} stopOpacity="0" />
+              <Stop offset="0.42" stopColor={fadeColor} stopOpacity="0.68" />
+              <Stop offset="1" stopColor={fadeColor} stopOpacity="0.88" />
+            </LinearGradient>
+          </Defs>
+          <Rect width="100%" height="100%" fill="url(#tab-bar-fade)" />
+        </Svg>
+      </View>
+      <View pointerEvents="box-none" style={[styles.wrapper, { bottom }]}>
+        <View
+          style={[
+            styles.surface,
+            {
+              backgroundColor:
+                colorScheme === 'dark' ? 'rgba(38, 38, 38, 0.85)' : 'rgba(255, 255, 255, 0.85)',
+              borderColor:
+                colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
+            },
+          ]}>
+          <View style={styles.row} onLayout={onRowLayout}>
+            <Animated.View
+              pointerEvents="none"
+              style={[
+                styles.indicator,
+                indicatorStyle,
+                {
+                  backgroundColor:
+                    colorScheme === 'dark' ? INDICATOR_COLOR.dark : INDICATOR_COLOR.light,
+                },
+              ]}
+            />
+            {state.routes.map((route, index) => {
+              const { options } = descriptors[route.key];
+              const isFocused = state.index === index;
+              const label =
+                typeof options.tabBarLabel === 'string'
+                  ? options.tabBarLabel
+                  : (options.title ?? route.name);
+
+              return (
+                <TabBarButton
+                  key={route.key}
+                  routeKey={route.key}
+                  routeName={route.name}
+                  label={label}
+                  icon={TAB_ICONS[route.name] ?? DEFAULT_TAB_ICON}
+                  isFocused={isFocused}
+                  activeColor={theme.foreground}
+                  inactiveColor={theme.foreground}
+                  onPress={handlePress}
+                  onLongPress={handleLongPress}
+                />
+              );
+            })}
+          </View>
         </View>
       </View>
-    </View>
+    </>
   );
 }
 
@@ -157,7 +197,10 @@ const TabBarButton = React.memo(function TabBarButton({
   onPress,
   onLongPress,
 }: TabBarButtonProps) {
-  const handlePress = React.useCallback(() => onPress(routeKey, routeName), [onPress, routeKey, routeName]);
+  const handlePress = React.useCallback(
+    () => onPress(routeKey, routeName),
+    [onPress, routeKey, routeName]
+  );
   const handleLongPress = React.useCallback(() => onLongPress(routeKey), [onLongPress, routeKey]);
   const color = isFocused ? activeColor : inactiveColor;
 
@@ -172,7 +215,11 @@ const TabBarButton = React.memo(function TabBarButton({
       style={styles.buttonWrapper}>
       {({ pressed }) => (
         <View style={[styles.item, pressed && styles.itemPressed]}>
-          <Ionicons name={isFocused ? icon.filled : icon.outline} size={22} color={color} />
+          <Ionicons
+            name={isFocused ? icon.filled : icon.outline}
+            size={TAB_ICON_SIZE}
+            color={color}
+          />
           <Text numberOfLines={1} style={{ color }} className="text-[11px] font-medium">
             {label}
           </Text>
@@ -183,6 +230,12 @@ const TabBarButton = React.memo(function TabBarButton({
 });
 
 const styles = StyleSheet.create({
+  fade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
   wrapper: {
     position: 'absolute',
     left: 24,
