@@ -15,11 +15,16 @@ export const FLOATING_TAB_BAR_CLEARANCE = FLOATING_TAB_BAR_HEIGHT + FLOATING_TAB
 
 const ROW_HORIZONTAL_PADDING = 8;
 const TAB_ITEM_HEIGHT = 48;
-// The indicator's width is a fraction of each tab's own slot, so it always
-// hugs that tab's icon + label without ever reaching into a neighboring tab.
-const INDICATOR_WIDTH_RATIO = 0.82;
-const INDICATOR_TOP = (FLOATING_TAB_BAR_HEIGHT - TAB_ITEM_HEIGHT) / 2;
+// Let the selected background bleed into neighboring tab slots a little so the
+// active state feels broader than the icon + label column.
+const INDICATOR_HORIZONTAL_OVERLAP = 3;
+const INDICATOR_HEIGHT = 56;
+const INDICATOR_TOP = (FLOATING_TAB_BAR_HEIGHT - INDICATOR_HEIGHT) / 2;
 const INDICATOR_SPRING = { damping: 20, stiffness: 220, mass: 0.6 };
+const INDICATOR_COLOR = {
+  light: 'rgba(0, 0, 0, 0.09)',
+  dark: 'rgba(255, 255, 255, 0.16)',
+};
 
 // Ionicons ships real outline/filled pairs, so the selected tab can swap the
 // glyph itself instead of faking a "solid" look by filling an outline icon.
@@ -57,7 +62,7 @@ function FloatingTabBarImpl({ state, descriptors, navigation }: BottomTabBarProp
   const indicatorStyle = useAnimatedStyle(() => {
     const usableWidth = Math.max(rowWidth.value - ROW_HORIZONTAL_PADDING * 2, 0);
     const slot = usableWidth / routeCount;
-    const width = slot * INDICATOR_WIDTH_RATIO;
+    const width = Math.max(slot + INDICATOR_HORIZONTAL_OVERLAP * 2, 0);
     const slotCenter = ROW_HORIZONTAL_PADDING + activeIndex.value * slot + slot / 2;
     return {
       width,
@@ -96,7 +101,11 @@ function FloatingTabBarImpl({ state, descriptors, navigation }: BottomTabBarProp
         <View style={styles.row} onLayout={onRowLayout}>
           <Animated.View
             pointerEvents="none"
-            style={[styles.indicator, indicatorStyle, { backgroundColor: theme.secondary }]}
+            style={[
+              styles.indicator,
+              indicatorStyle,
+              { backgroundColor: colorScheme === 'dark' ? INDICATOR_COLOR.dark : INDICATOR_COLOR.light },
+            ]}
           />
           {state.routes.map((route, index) => {
             const { options } = descriptors[route.key];
@@ -200,8 +209,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: INDICATOR_TOP,
     left: 0,
-    height: TAB_ITEM_HEIGHT,
-    borderRadius: TAB_ITEM_HEIGHT / 2,
+    height: INDICATOR_HEIGHT,
+    borderRadius: INDICATOR_HEIGHT / 2,
   },
   buttonWrapper: {
     flex: 1,
