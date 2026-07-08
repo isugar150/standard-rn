@@ -33,6 +33,8 @@ const TAB_BAR_FADE_COLOR = {
 };
 const TAB_BAR_FADE_EXTRA_HEIGHT = 36;
 const TAB_ICON_SIZE = 25;
+const TAB_PRESS_SCALE = 1.08;
+const TAB_PRESS_SPRING = { damping: 14, stiffness: 420, mass: 0.45 };
 
 // Ionicons ships real outline/filled pairs, so the selected tab can swap the
 // glyph itself instead of faking a "solid" look by filling an outline icon.
@@ -202,29 +204,39 @@ const TabBarButton = React.memo(function TabBarButton({
     [onPress, routeKey, routeName]
   );
   const handleLongPress = React.useCallback(() => onLongPress(routeKey), [onLongPress, routeKey]);
+  const pressScale = useSharedValue(1);
+  const pressStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pressScale.value }],
+  }));
+  const handlePressIn = React.useCallback(() => {
+    pressScale.value = withSpring(TAB_PRESS_SCALE, TAB_PRESS_SPRING);
+  }, [pressScale]);
+  const handlePressOut = React.useCallback(() => {
+    pressScale.value = withSpring(1, TAB_PRESS_SPRING);
+  }, [pressScale]);
   const color = isFocused ? activeColor : inactiveColor;
 
   return (
     <Pressable
       onPress={handlePress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       onLongPress={handleLongPress}
       accessibilityRole="button"
       accessibilityState={{ selected: isFocused }}
       accessibilityLabel={label}
       hitSlop={8}
       style={styles.buttonWrapper}>
-      {({ pressed }) => (
-        <View style={[styles.item, pressed && styles.itemPressed]}>
-          <Ionicons
-            name={isFocused ? icon.filled : icon.outline}
-            size={TAB_ICON_SIZE}
-            color={color}
-          />
-          <Text numberOfLines={1} style={{ color }} className="text-[11px] font-medium">
-            {label}
-          </Text>
-        </View>
-      )}
+      <Animated.View style={[styles.item, pressStyle]}>
+        <Ionicons
+          name={isFocused ? icon.filled : icon.outline}
+          size={TAB_ICON_SIZE}
+          color={color}
+        />
+        <Text numberOfLines={1} style={{ color }} className="text-[11px] font-medium">
+          {label}
+        </Text>
+      </Animated.View>
     </Pressable>
   );
 });
@@ -277,9 +289,6 @@ const styles = StyleSheet.create({
     gap: 2,
     height: TAB_ITEM_HEIGHT,
     width: '100%',
-  },
-  itemPressed: {
-    opacity: 0.6,
   },
 });
 
