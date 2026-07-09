@@ -9,7 +9,7 @@ export const TAB_ITEM_HEIGHT = 48;
 
 // Let the selected background bleed into neighboring tab slots a little so the
 // active state feels broader than the icon + label column.
-export const INDICATOR_HORIZONTAL_OVERLAP = 3;
+export const INDICATOR_HORIZONTAL_OVERLAP = 4;
 export const INDICATOR_HEIGHT = 56;
 export const INDICATOR_TOP = (FLOATING_TAB_BAR_HEIGHT - INDICATOR_HEIGHT) / 2;
 export const INDICATOR_SPRING = { damping: 20, stiffness: 220, mass: 0.6 };

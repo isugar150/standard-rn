@@ -1,10 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import { MoonStarIcon, SunIcon } from 'lucide-react-native';
+import { MenuIcon, MoonStarIcon, SunIcon, XIcon } from 'lucide-react-native';
 import { useColorScheme } from 'nativewind';
 import * as React from 'react';
-import { View } from 'react-native';
+import { Animated, Modal, Platform, Pressable, View, useWindowDimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type CommonMenuHeaderProps = {
   title: string;
@@ -13,15 +14,100 @@ type CommonMenuHeaderProps = {
 
 export function CommonMenuHeader({ title, actions }: CommonMenuHeaderProps) {
   return (
-    <View className="flex-row items-center justify-between px-4 pb-2">
-      <Text variant="h3" className="border-0 pb-0">
+    <View className="min-h-12 flex-row items-center justify-between pb-2 pl-4 pr-3">
+      <Text variant="h3" numberOfLines={1} className="flex-1 border-0 pb-0">
         {title}
       </Text>
-      <View className="flex-row items-center gap-1">
+      <View className="flex-row items-center justify-end gap-2">
         {actions}
         <ThemeToggle />
+        <MoreMenu />
       </View>
     </View>
+  );
+}
+
+const MENU_ITEMS = ['메뉴1', '메뉴2', '메뉴3', '메뉴4', '메뉴5'] as const;
+const USE_NATIVE_DRIVER = Platform.OS !== 'web';
+
+function MoreMenu() {
+  const { width } = useWindowDimensions();
+  const [isOpen, setIsOpen] = React.useState(false);
+  const progress = React.useRef(new Animated.Value(0)).current;
+
+  const openMenu = React.useCallback(() => {
+    setIsOpen(true);
+    Animated.timing(progress, {
+      toValue: 1,
+      duration: 220,
+      useNativeDriver: USE_NATIVE_DRIVER,
+    }).start();
+  }, [progress]);
+
+  const closeMenu = React.useCallback(() => {
+    Animated.timing(progress, {
+      toValue: 0,
+      duration: 180,
+      useNativeDriver: USE_NATIVE_DRIVER,
+    }).start(({ finished }) => {
+      if (finished) {
+        setIsOpen(false);
+      }
+    });
+  }, [progress]);
+
+  const panelStyle = {
+    transform: [
+      {
+        translateX: progress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [width, 0],
+        }),
+      },
+    ],
+  };
+
+  return (
+    <>
+      <Button
+        onPress={openMenu}
+        size="icon"
+        variant="ghost"
+        accessibilityLabel="더보기 메뉴 열기"
+        className="rounded-full">
+        <Icon as={MenuIcon} className="size-5" />
+      </Button>
+      <Modal visible={isOpen} transparent animationType="none" onRequestClose={closeMenu}>
+        <View className="flex-1 overflow-hidden">
+          <Animated.View
+            className="bg-background h-full px-5 shadow-lg shadow-black/10"
+            style={[{ width }, panelStyle]}>
+            <SafeAreaView edges={['top', 'bottom']} className="flex-1">
+              <View className="min-h-12 flex-row items-center justify-between pb-4 pt-1">
+                <Text variant="h4" className="border-0 pb-0">
+                  더보기
+                </Text>
+                <Button
+                  onPress={closeMenu}
+                  size="icon"
+                  variant="ghost"
+                  accessibilityLabel="더보기 메뉴 닫기"
+                  className="rounded-full">
+                  <Icon as={XIcon} className="size-5" />
+                </Button>
+              </View>
+              <View className="gap-1 py-2">
+                {MENU_ITEMS.map((item) => (
+                  <Pressable key={item} className="rounded-xl px-3 py-4 active:bg-accent">
+                    <Text className="text-base font-medium">{item}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </SafeAreaView>
+          </Animated.View>
+        </View>
+      </Modal>
+    </>
   );
 }
 
@@ -34,7 +120,12 @@ function ThemeToggle() {
   const { colorScheme, toggleColorScheme } = useColorScheme();
 
   return (
-    <Button onPressIn={toggleColorScheme} size="icon" variant="ghost" className="rounded-full">
+    <Button
+      onPressIn={toggleColorScheme}
+      size="icon"
+      variant="ghost"
+      accessibilityLabel="테마 변경"
+      className="rounded-full">
       <Icon as={THEME_ICONS[colorScheme ?? 'light']} className="size-5" />
     </Button>
   );
