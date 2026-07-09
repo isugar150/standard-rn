@@ -11,7 +11,7 @@ import * as React from 'react';
 import { FlatList, Platform, RefreshControl, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 
-export default function Menu1Screen() {
+export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { data: posts, isPending, isError, refetch, isRefetching } = usePosts();
   const sheetRef = React.useRef<React.ComponentRef<typeof BottomSheetModal>>(null);
@@ -23,8 +23,8 @@ export default function Menu1Screen() {
   }, []);
 
   return (
-    <SafeAreaView edges={['top']} className="bg-background flex-1">
-      <CommonMenuHeader title="홈" />
+    <SafeAreaView edges={['top']} className="flex-1 bg-background">
+      <CommonMenuHeader />
       <FlatList
         data={posts}
         keyExtractor={(post) => String(post.id)}

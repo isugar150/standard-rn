@@ -4,20 +4,34 @@ import { Text } from '@/components/ui/text';
 import { MenuIcon, MoonStarIcon, SunIcon, XIcon } from 'lucide-react-native';
 import { useColorScheme } from 'nativewind';
 import * as React from 'react';
-import { Animated, Modal, Platform, Pressable, View, useWindowDimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  Animated,
+  Image,
+  Modal,
+  Platform,
+  Pressable,
+  View,
+  useWindowDimensions,
+} from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 type CommonMenuHeaderProps = {
-  title: string;
   actions?: React.ReactNode;
 };
 
-export function CommonMenuHeader({ title, actions }: CommonMenuHeaderProps) {
+const APP_WORDMARK = require('@/assets/images/app-wordmark.png');
+
+export function CommonMenuHeader({ actions }: CommonMenuHeaderProps) {
   return (
     <View className="min-h-12 flex-row items-center justify-between pb-2 pl-4 pr-3">
-      <Text variant="h3" numberOfLines={1} className="flex-1 border-0 pb-0">
-        {title}
-      </Text>
+      <View className="flex-1">
+        <Image
+          source={APP_WORDMARK}
+          resizeMode="contain"
+          accessibilityLabel="standard-rn 로고"
+          className="h-10 w-48"
+        />
+      </View>
       <View className="flex-row items-center justify-end gap-2">
         {actions}
         <ThemeToggle />
@@ -78,36 +92,38 @@ function MoreMenu() {
         <Icon as={MenuIcon} className="size-5" />
       </Button>
       <Modal visible={isOpen} transparent animationType="none" onRequestClose={closeMenu}>
-        <View className="flex-1 overflow-hidden">
-          <Animated.View
-            className="bg-background h-full shadow-lg shadow-black/10"
-            style={[{ width }, panelStyle]}>
-            <SafeAreaView edges={['top', 'bottom']} className="flex-1">
-              <View className="min-h-12 flex-row items-center justify-between px-4 pt-1">
-                <Text variant="h4" className="border-0 pb-0">
-                  더보기
-                </Text>
-                <Button
-                  onPress={closeMenu}
-                  size="icon"
-                  variant="ghost"
-                  accessibilityLabel="더보기 메뉴 닫기"
-                  className="rounded-full">
-                  <Icon as={XIcon} className="size-5" />
-                </Button>
-              </View>
-              <View className="gap-3 px-4 pt-8">
-                {MENU_ITEMS.map((item) => (
-                  <Pressable
-                    key={item}
-                    className="bg-card border-border rounded-2xl border px-5 py-4 active:bg-accent">
-                    <Text className="text-base font-medium">{item}</Text>
-                  </Pressable>
-                ))}
-              </View>
-            </SafeAreaView>
-          </Animated.View>
-        </View>
+        <SafeAreaProvider>
+          <View className="flex-1 overflow-hidden">
+            <Animated.View
+              className="h-full bg-background shadow-lg shadow-black/10"
+              style={[{ width }, panelStyle]}>
+              <SafeAreaView edges={['top', 'bottom']} className="flex-1">
+                <View className="min-h-12 flex-row items-center justify-between px-4 pt-1">
+                  <Text variant="h4" className="border-0 pb-0">
+                    더보기
+                  </Text>
+                  <Button
+                    onPress={closeMenu}
+                    size="icon"
+                    variant="ghost"
+                    accessibilityLabel="더보기 메뉴 닫기"
+                    className="rounded-full">
+                    <Icon as={XIcon} className="size-5" />
+                  </Button>
+                </View>
+                <View className="gap-3 px-4 pt-8">
+                  {MENU_ITEMS.map((item) => (
+                    <Pressable
+                      key={item}
+                      className="rounded-2xl border border-border bg-card px-5 py-4 active:bg-accent">
+                      <Text className="text-base font-medium">{item}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </SafeAreaView>
+            </Animated.View>
+          </View>
+        </SafeAreaProvider>
       </Modal>
     </>
   );

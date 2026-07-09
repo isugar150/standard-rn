@@ -8,8 +8,8 @@ import { useColorScheme } from 'nativewind';
 import { Platform } from 'react-native';
 
 const TAB_TITLES = ['홈', '검색', '추가', '알림', '마이'] as const;
-const TAB_ROUTES = ['index', 'menu2', 'menu3', 'menu4', 'menu5'] as const;
-const ACTION_TAB_ROUTE = 'menu3';
+const TAB_ROUTES = ['home', 'search', 'create', 'notifications', 'profile'] as const;
+const ACTION_TAB_ROUTE = 'create';
 const TAB_SF_ICONS = [
   { default: 'house', selected: 'house.fill' },
   { default: 'magnifyingglass', selected: 'magnifyingglass' },
