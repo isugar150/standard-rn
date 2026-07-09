@@ -7,7 +7,15 @@
     "android": "expo start -c --android",
     "ios": "expo start -c --ios",
     "web": "expo start -c --web",
-    "clean": "rm -rf .expo node_modules"
+    "clean": "rm -rf .expo node_modules",
+    "eas:init": "eas init --id fe6cb661-0bab-4de8-ac1f-68cd2b22e6d6",
+    "eas:configure": "eas build:configure",
+    "build:android:preview": "eas build -p android --profile preview",
+    "build:android:production": "eas build -p android --profile production",
+    "build:ios:production": "eas build -p ios --profile production",
+    "submit:android": "eas submit -p android --profile production",
+    "submit:ios": "eas submit -p ios --profile production",
+    "update:production": "eas update --branch production --message"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
