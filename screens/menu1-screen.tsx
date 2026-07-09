@@ -1,14 +1,12 @@
+import { CommonMenuHeader } from '@/components/common-menu-header';
 import { PostCard } from '@/components/post-card';
 import { PostDetailSheet } from '@/components/post-detail-sheet';
 import { Button } from '@/components/ui/button';
-import { Icon } from '@/components/ui/icon';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { FLOATING_TAB_BAR_CLEARANCE } from '@/components/floating-tab-bar';
 import { usePosts, type Post } from '@/hooks/use-posts';
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { MoonStarIcon, SunIcon } from 'lucide-react-native';
-import { useColorScheme } from 'nativewind';
 import * as React from 'react';
 import { FlatList, Platform, RefreshControl, View } from 'react-native';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
@@ -26,12 +24,7 @@ export default function Menu1Screen() {
 
   return (
     <SafeAreaView edges={['top']} className="bg-background flex-1">
-      <View className="flex-row items-center justify-between px-4 pb-2">
-        <Text variant="h3" className="border-0 pb-0">
-          메뉴1
-        </Text>
-        <ThemeToggle />
-      </View>
+      <CommonMenuHeader title="메뉴1" />
       <FlatList
         data={posts}
         keyExtractor={(post) => String(post.id)}
@@ -63,20 +56,5 @@ export default function Menu1Screen() {
       />
       <PostDetailSheet ref={sheetRef} post={selectedPost} />
     </SafeAreaView>
-  );
-}
-
-const THEME_ICONS = {
-  light: SunIcon,
-  dark: MoonStarIcon,
-};
-
-function ThemeToggle() {
-  const { colorScheme, toggleColorScheme } = useColorScheme();
-
-  return (
-    <Button onPressIn={toggleColorScheme} size="icon" variant="ghost" className="rounded-full">
-      <Icon as={THEME_ICONS[colorScheme ?? 'light']} className="size-5" />
-    </Button>
   );
 }
