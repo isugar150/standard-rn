@@ -4,11 +4,11 @@ import { PostDetailSheet } from '@/components/post-detail-sheet';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
-import { FLOATING_TAB_BAR_CLEARANCE } from '@/components/floating-tab-bar';
+import { FLOATING_TAB_BAR_CLEARANCE } from '@/components/floating-tab-bar/constants';
 import { usePosts, type Post } from '@/hooks/use-posts';
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import * as React from 'react';
-import { FlatList, Platform, RefreshControl, View } from 'react-native';
+import { FlatList, Platform, RefreshControl, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Menu1Screen() {
@@ -24,16 +24,17 @@ export default function Menu1Screen() {
 
   return (
     <SafeAreaView edges={['top']} className="bg-background flex-1">
-      <CommonMenuHeader title="메뉴1" />
+      <CommonMenuHeader title="홈" />
       <FlatList
         data={posts}
         keyExtractor={(post) => String(post.id)}
-        contentContainerClassName="gap-3 p-4"
         contentContainerStyle={
           // NativeTabs (iOS) applies automatic content inset adjustment for the tab bar.
           // The custom FloatingTabBar (Android) is an absolute overlay, so screens must
           // reserve space for it manually.
-          Platform.OS === 'ios' ? undefined : { paddingBottom: insets.bottom + FLOATING_TAB_BAR_CLEARANCE }
+          Platform.OS === 'ios'
+            ? styles.listContent
+            : [styles.listContent, { paddingBottom: insets.bottom + FLOATING_TAB_BAR_CLEARANCE }]
         }
         renderItem={({ item }) => <PostCard post={item} onPress={onCardPress} />}
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
@@ -58,3 +59,11 @@ export default function Menu1Screen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  listContent: {
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+});

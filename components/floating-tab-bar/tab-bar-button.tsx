@@ -5,13 +5,13 @@ import { Pressable, StyleSheet } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 import { TAB_ICON_SIZE, TAB_ITEM_HEIGHT, TAB_PRESS_SCALE, TAB_PRESS_SPRING } from './constants';
-import type { IoniconsName } from './tab-icons';
+import type { TabIconConfig } from './tab-icons';
 
 type TabBarButtonProps = {
   routeKey: string;
   routeName: string;
   label: string;
-  icon: { outline: IoniconsName; filled: IoniconsName };
+  icon: TabIconConfig;
   isFocused: boolean;
   activeColor: string;
   inactiveColor: string;
@@ -47,6 +47,7 @@ function TabBarButtonImpl({
     pressScale.value = withSpring(1, TAB_PRESS_SPRING);
   }, [pressScale]);
   const color = isFocused ? activeColor : inactiveColor;
+  const showLabel = icon.showLabel ?? true;
 
   return (
     <Pressable
@@ -62,12 +63,14 @@ function TabBarButtonImpl({
       <Animated.View style={[styles.item, pressStyle]}>
         <Ionicons
           name={isFocused ? icon.filled : icon.outline}
-          size={TAB_ICON_SIZE}
+          size={icon.size ?? TAB_ICON_SIZE}
           color={color}
         />
-        <Text numberOfLines={1} style={{ color }} className="text-[11px] font-medium">
-          {label}
-        </Text>
+        {showLabel && (
+          <Text numberOfLines={1} style={{ color }} className="text-[11px] font-medium">
+            {label}
+          </Text>
+        )}
       </Animated.View>
     </Pressable>
   );

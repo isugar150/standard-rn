@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function Menu3Screen() {
   return (
     <SafeAreaView edges={['top']} className="bg-background flex-1">
-      <CommonMenuHeader title="메뉴3" />
+      <CommonMenuHeader title="글쓰기" />
       <View className="flex-1 items-center justify-center gap-2 px-8">
         <Text className="text-muted-foreground text-center">메뉴3 화면입니다. 실제 콘텐츠로 교체해 주세요.</Text>
       </View>

@@ -10,7 +10,21 @@ import { TabBarSurface } from './tab-bar-surface';
 
 export { FLOATING_TAB_BAR_CLEARANCE } from './constants';
 
-function FloatingTabBarImpl({ state, descriptors, navigation }: BottomTabBarProps) {
+type FloatingTabBarProps = BottomTabBarProps & {
+  /**
+   * Called before a tab press would normally navigate. Return `true` to mark
+   * the press as fully handled (e.g. opening a modal/sheet instead of
+   * selecting the tab) so the default navigation + focus change is skipped.
+   */
+  onInterceptTabPress?: (routeName: string) => boolean;
+};
+
+function FloatingTabBarImpl({
+  state,
+  descriptors,
+  navigation,
+  onInterceptTabPress,
+}: FloatingTabBarProps) {
   const insets = useSafeAreaInsets();
   const { colorScheme } = useColorScheme();
   const resolvedColorScheme = colorScheme ?? 'light';
@@ -25,11 +39,13 @@ function FloatingTabBarImpl({ state, descriptors, navigation }: BottomTabBarProp
         target: routeKey,
         canPreventDefault: true,
       });
-      if (!isFocused && !event.defaultPrevented) {
+      if (event.defaultPrevented) return;
+      if (onInterceptTabPress?.(routeName)) return;
+      if (!isFocused) {
         navigation.navigate(routeName);
       }
     },
-    [navigation, state.index, state.routes]
+    [navigation, state.index, state.routes, onInterceptTabPress]
   );
 
   const handleLongPress = React.useCallback(

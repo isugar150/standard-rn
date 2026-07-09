@@ -27,7 +27,7 @@ export function CommonMenuHeader({ title, actions }: CommonMenuHeaderProps) {
   );
 }
 
-const MENU_ITEMS = ['메뉴1', '메뉴2', '메뉴3', '메뉴4', '메뉴5'] as const;
+const MENU_ITEMS = ['홈', '검색', '글쓰기', '알림', '마이'] as const;
 const USE_NATIVE_DRIVER = Platform.OS !== 'web';
 
 function MoreMenu() {
@@ -80,10 +80,10 @@ function MoreMenu() {
       <Modal visible={isOpen} transparent animationType="none" onRequestClose={closeMenu}>
         <View className="flex-1 overflow-hidden">
           <Animated.View
-            className="bg-background h-full px-5 shadow-lg shadow-black/10"
+            className="bg-background h-full shadow-lg shadow-black/10"
             style={[{ width }, panelStyle]}>
             <SafeAreaView edges={['top', 'bottom']} className="flex-1">
-              <View className="min-h-12 flex-row items-center justify-between pb-4 pt-1">
+              <View className="min-h-12 flex-row items-center justify-between px-4 pt-1">
                 <Text variant="h4" className="border-0 pb-0">
                   더보기
                 </Text>
@@ -96,9 +96,11 @@ function MoreMenu() {
                   <Icon as={XIcon} className="size-5" />
                 </Button>
               </View>
-              <View className="gap-1 py-2">
+              <View className="gap-3 px-4 pt-8">
                 {MENU_ITEMS.map((item) => (
-                  <Pressable key={item} className="rounded-xl px-3 py-4 active:bg-accent">
+                  <Pressable
+                    key={item}
+                    className="bg-card border-border rounded-2xl border px-5 py-4 active:bg-accent">
                     <Text className="text-base font-medium">{item}</Text>
                   </Pressable>
                 ))}
