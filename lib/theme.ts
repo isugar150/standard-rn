@@ -1,8 +1,9 @@
 import { DarkTheme, DefaultTheme, type Theme } from 'expo-router/react-navigation';
- 
+
 export const THEME = {
   light: {
     background: 'hsl(0 0% 100%)',
+    nativeBackground: 'rgb(255, 255, 255)',
     foreground: 'hsl(0 0% 3.9%)',
     card: 'hsl(0 0% 100%)',
     cardForeground: 'hsl(0 0% 3.9%)',
@@ -29,6 +30,7 @@ export const THEME = {
   },
   dark: {
     background: 'hsl(0 0% 3.9%)',
+    nativeBackground: 'rgb(10, 10, 10)',
     foreground: 'hsl(0 0% 98%)',
     card: 'hsl(0 0% 3.9%)',
     cardForeground: 'hsl(0 0% 98%)',
@@ -54,7 +56,7 @@ export const THEME = {
     chart5: 'hsl(340 75% 55%)',
   },
 };
- 
+
 export const NAV_THEME: Record<'light' | 'dark', Theme> = {
   light: {
     ...DefaultTheme,
