@@ -1,69 +1,555 @@
-import { CommonMenuHeader } from '@/components/common-menu-header';
-import { PostCard } from '@/components/post-card';
-import { PostDetailSheet } from '@/components/post-detail-sheet';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { FLOATING_TAB_BAR_CLEARANCE } from '@/components/floating-tab-bar/constants';
-import { usePosts, type Post } from '@/hooks/use-posts';
-import type { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { StripePlaceholder } from '@/components/stripe-placeholder';
+import { BRAND } from '@/lib/theme';
+import { cn } from '@/lib/utils';
+import { Link } from 'expo-router';
+import { BellIcon, ChevronRightIcon, SearchIcon } from 'lucide-react-native';
 import * as React from 'react';
-import { FlatList, Platform, RefreshControl, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
+import { Pressable, ScrollView, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Carousel from 'react-native-reanimated-carousel';
+
+type Baby = {
+  id: string;
+  name: string;
+  dday: number;
+  weight: string;
+  height: string;
+};
+
+type Tag = { id: string; label: string; selected?: boolean };
+
+type ContentItem = { id: string; title: string; author: string; likes: number };
+
+type Product = {
+  id: string;
+  brand: string;
+  name: string;
+  discount: string;
+  price: string;
+};
+
+type Experience = {
+  id: string;
+  title: string;
+  location: string;
+  brand: string;
+  badge: '예약가능' | '마감임박';
+};
+
+type Mentor = { id: string; name: string };
+
+type Post = { id: string; title: string; comments: number; likes: number };
+
+const BABIES: Baby[] = [
+  { id: '1', name: '이준이', dday: 186, weight: '7.8kg', height: '68cm' },
+  { id: '2', name: '하은이', dday: 920, weight: '13.2kg', height: '92cm' },
+];
+
+const TAGS: Tag[] = [
+  { id: '1', label: '#신생아', selected: true },
+  { id: '2', label: '#이유식' },
+  { id: '3', label: '#카시트' },
+  { id: '4', label: '#유모차' },
+  { id: '5', label: '#수면교육' },
+];
+
+const CONTENTS: ContentItem[] = [
+  { id: '1', title: '밤중수유 루틴, 이렇게 편해졌어요', author: 'say_mom', likes: 342 },
+  { id: '2', title: '6개월 이유식 초기 세팅 리스트', author: 'little_table', likes: 218 },
+  { id: '3', title: '카시트 안전 체크리스트', author: 'safe_drive', likes: 187 },
+];
+
+const PRODUCTS: Product[] = [
+  { id: '1', brand: '라라베베', name: '전연령 카시트 세이프 3', discount: '32%', price: '129,000원' },
+  { id: '2', brand: '소보송', name: '유기농 전연령 이유식 세트', discount: '15%', price: '38,900원' },
+  { id: '3', brand: '보노보노', name: '신생아 아기띠 세트', discount: '20%', price: '85,000원' },
+];
+
+const EXPERIENCES: Experience[] = [
+  {
+    id: '1',
+    title: '뉴본 카시트 3일 체험단',
+    location: '서울 강남',
+    brand: '브랜드 라라베베',
+    badge: '예약가능',
+  },
+  {
+    id: '2',
+    title: '유모차 시승 클래스',
+    location: '온라인',
+    brand: '브랜드 뽀득',
+    badge: '마감임박',
+  },
+];
+
+const MENTORS: Mentor[] = [
+  { id: '1', name: '수면코치 지은' },
+  { id: '2', name: '이유식쌤 나라' },
+  { id: '3', name: '육아템리뷰' },
+  { id: '4', name: '소아과 의사' },
+];
+
+const POSTS: Post[] = [
+  { id: '1', title: '카시트 새거 vs 중고, 뭐가 나을까요?', comments: 48, likes: 156 },
+  { id: '2', title: '이유식 초기, 진짜 이렇게까지 해야하나요 (후기)', comments: 31, likes: 98 },
+];
+
+const SCREEN_PADDING = 20;
+const CONTENT_CARD_WIDTH = 220;
+const CONTENT_CARD_HEIGHT = 200;
+const PRODUCT_CARD_WIDTH = 150;
+const EXPERIENCE_CARD_WIDTH = 210;
+const EXPERIENCE_IMAGE_HEIGHT = 130;
+const MENTOR_WIDTH = 76;
 
 export default function HomeScreen() {
-  const insets = useSafeAreaInsets();
-  const { data: posts, isPending, isError, refetch, isRefetching } = usePosts();
-  const sheetRef = React.useRef<React.ComponentRef<typeof BottomSheetModal>>(null);
-  const [selectedPost, setSelectedPost] = React.useState<Post | null>(null);
-
-  const onCardPress = React.useCallback((post: Post) => {
-    setSelectedPost(post);
-    sheetRef.current?.present();
-  }, []);
+  const [activeBabyIndex, setActiveBabyIndex] = React.useState(0);
+  const activeBaby = BABIES[activeBabyIndex];
 
   return (
-    <SafeAreaView edges={['top']} className="flex-1 bg-background">
-      <CommonMenuHeader />
-      <FlatList
-        data={posts}
-        keyExtractor={(post) => String(post.id)}
-        contentContainerStyle={
-          // NativeTabs (iOS) applies automatic content inset adjustment for the tab bar.
-          // The custom FloatingTabBar (Android) is an absolute overlay, so screens must
-          // reserve space for it manually.
-          Platform.OS === 'ios'
-            ? styles.listContent
-            : [styles.listContent, { paddingBottom: insets.bottom + FLOATING_TAB_BAR_CLEARANCE }]
-        }
-        renderItem={({ item }) => <PostCard post={item} onPress={onCardPress} />}
-        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
-        ListEmptyComponent={
-          isPending ? (
-            <View className="gap-3">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <Skeleton key={index} className="h-28 w-full rounded-xl" />
-              ))}
-            </View>
-          ) : isError ? (
-            <View className="items-center gap-3 py-16">
-              <Text className="text-muted-foreground">Failed to load posts.</Text>
-              <Button variant="outline" onPress={() => refetch()}>
-                <Text>Try again</Text>
-              </Button>
-            </View>
-          ) : null
-        }
-      />
-      <PostDetailSheet ref={sheetRef} post={selectedPost} />
+    <SafeAreaView
+      edges={['top']}
+      className="flex-1"
+      style={{ backgroundColor: BRAND.cream }}>
+      <Header />
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: FLOATING_TAB_BAR_CLEARANCE }}
+        showsVerticalScrollIndicator={false}>
+        <BabyChips
+          babies={BABIES}
+          activeIndex={activeBabyIndex}
+          onSelect={setActiveBabyIndex}
+        />
+        <ActiveBabyCard baby={activeBaby} />
+        <TagPills tags={TAGS} />
+        <SectionTitle title="지금 뜨는 콘텐츠" className="mb-3 px-5" />
+        <ContentCarousel items={CONTENTS} />
+        <SectionTitle
+          title="채원님을 위한 추천 상품"
+          action="더보기"
+          className="mb-3 px-5"
+        />
+        <ProductCarousel items={PRODUCTS} />
+        <SectionTitle title="인기 체험" className="mb-3 px-5" />
+        <ExperienceCarousel items={EXPERIENCES} />
+        <SectionTitle title="팔로우한 멘토" className="mb-3 px-5" />
+        <MentorList items={MENTORS} />
+        <SectionTitle title="커뮤니티 인기글" className="mb-3 px-5" />
+        <PostList items={POSTS} />
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  listContent: {
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-  },
-});
+function Header() {
+  return (
+    <View className="flex-row items-center justify-between pb-3.5 pt-4"
+      style={{ paddingHorizontal: SCREEN_PADDING }}>
+      <Text
+        className="text-xl font-extrabold tracking-tight"
+        style={{ color: BRAND.dark, letterSpacing: -0.3 }}>
+        멘토리
+      </Text>
+      <View className="flex-row items-center" style={{ gap: 14 }}>
+        <Link href="/search-input" asChild>
+          <Pressable
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel="검색">
+            <Icon as={SearchIcon} size={22} color={BRAND.dark} />
+          </Pressable>
+        </Link>
+        <Pressable hitSlop={10} accessibilityRole="button" accessibilityLabel="알림">
+          <Icon as={BellIcon} size={22} color={BRAND.dark} />
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+function BabyChips({
+  babies,
+  activeIndex,
+  onSelect,
+}: {
+  babies: Baby[];
+  activeIndex: number;
+  onSelect: (index: number) => void;
+}) {
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{
+        gap: 10,
+        paddingHorizontal: SCREEN_PADDING,
+        paddingTop: 4,
+        paddingBottom: 14,
+      }}>
+      {babies.map((baby, index) => {
+        const active = index === activeIndex;
+        return (
+          <Pressable
+            key={baby.id}
+            onPress={() => onSelect(index)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: active }}
+            accessibilityLabel={`${baby.name} 선택`}
+            className="flex-row items-center rounded-full"
+            style={{
+              gap: 8,
+              paddingLeft: 7,
+              paddingRight: 14,
+              paddingVertical: 7,
+              backgroundColor: active ? '#FFFFFF' : 'transparent',
+              borderWidth: 1.5,
+              borderColor: active ? BRAND.dark : BRAND.muted,
+              borderStyle: active ? 'solid' : 'solid',
+            }}>
+            <Avatar alt={baby.name} className="size-[30px]">
+              <AvatarFallback>
+                <Text className="text-[10px] font-medium">BABY</Text>
+              </AvatarFallback>
+            </Avatar>
+            <Text
+              className="text-[12.5px] font-bold"
+              style={{ color: active ? BRAND.dark : BRAND.mutedText }}>
+              {baby.name}
+            </Text>
+          </Pressable>
+        );
+      })}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="아이 추가"
+        className="flex-row items-center rounded-full"
+        style={{
+          gap: 6,
+          paddingHorizontal: 14,
+          paddingVertical: 7,
+          borderWidth: 1.5,
+          borderColor: BRAND.muted,
+          borderStyle: 'dashed',
+        }}>
+        <Text className="text-base leading-none" style={{ color: BRAND.dark }}>
+          +
+        </Text>
+        <Text className="text-[12.5px] font-bold" style={{ color: BRAND.dark }}>
+          아이 추가
+        </Text>
+      </Pressable>
+    </ScrollView>
+  );
+}
+
+function ActiveBabyCard({ baby }: { baby: Baby }) {
+  return (
+    <View
+      className="rounded-3xl bg-card p-4"
+      style={{
+        marginHorizontal: SCREEN_PADDING,
+        marginBottom: 22,
+        shadowColor: BRAND.dark,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.07,
+        shadowRadius: 10,
+        elevation: 2,
+      }}>
+      <Link href="/baby-detail" asChild>
+        <Pressable accessibilityRole="button" accessibilityLabel={`${baby.name} 상세`}>
+        <View className="flex-row items-center" style={{ gap: 12 }}>
+          <Avatar alt={baby.name} className="size-[52px]">
+            <AvatarFallback>
+              <Text className="text-sm font-medium">BABY</Text>
+            </AvatarFallback>
+          </Avatar>
+          <View className="flex-1">
+            <View className="flex-row items-baseline" style={{ gap: 6 }}>
+              <Text className="text-sm font-bold text-foreground">{baby.name}</Text>
+              <Text className="text-sm font-extrabold" style={{ color: BRAND.accent }}>
+                D+{baby.dday}
+              </Text>
+            </View>
+            <Text className="mt-0.5 text-[11.5px] text-muted-foreground">
+              최근 기록 · 몸무게 {baby.weight} · 키 {baby.height}
+            </Text>
+          </View>
+          <Icon as={ChevronRightIcon} size={18} className="text-muted-foreground" />
+        </View>
+        </Pressable>
+      </Link>
+      <View className="mt-3 flex-row" style={{ gap: 8 }}>
+        <QuickAction emoji="😴" label="어제 수면" />
+        <QuickAction emoji="🍼" label="그제 수유" />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="일기 쓰기"
+          className="flex-row items-center justify-center rounded-xl py-2"
+          style={{ flex: 1.4, gap: 4, backgroundColor: BRAND.dark }}>
+          <Text className="text-[13px]">📝</Text>
+          <Text className="text-[11.5px] font-bold text-primary-foreground">일기 쓰기</Text>
+          <Icon as={ChevronRightIcon} size={13} color="#FFFFFF" />
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+function QuickAction({ emoji, label }: { emoji: string; label: string }) {
+  return (
+    <View
+      className="flex-1 items-center justify-center rounded-xl py-2"
+      style={{ backgroundColor: BRAND.stripeBg }}>
+      <Text className="text-base">{emoji}</Text>
+      <Text className="mt-0.5 text-[10px] text-muted-foreground">{label}</Text>
+    </View>
+  );
+}
+
+function TagPills({ tags }: { tags: Tag[] }) {
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{
+        gap: 8,
+        paddingHorizontal: SCREEN_PADDING,
+        marginBottom: 22,
+      }}>
+      {tags.map((tag) => {
+        const selected = tag.selected ?? false;
+        return (
+          <View
+            key={tag.id}
+            className="rounded-full px-3.5 py-1.5"
+            style={{ backgroundColor: selected ? BRAND.dark : BRAND.accentSoft }}>
+            <Text
+              className="text-[12.5px] font-semibold"
+              style={{ color: selected ? '#FFFFFF' : BRAND.accentText }}>
+              {tag.label}
+            </Text>
+          </View>
+        );
+      })}
+    </ScrollView>
+  );
+}
+
+function SectionTitle({
+  title,
+  action,
+  className,
+}: {
+  title: string;
+  action?: string;
+  className?: string;
+}) {
+  return (
+    <View className={cn('flex-row items-baseline justify-between', className)}>
+      <Text className="text-[15px] font-bold text-foreground">{title}</Text>
+      {action ? (
+        <Pressable accessibilityRole="button" accessibilityLabel={action}>
+          <Text className="text-[11.5px] font-semibold" style={{ color: BRAND.accent }}>
+            {action}
+          </Text>
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
+
+function ContentCarousel({ items }: { items: ContentItem[] }) {
+  return (
+    <View className="mb-[26px]">
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{
+          gap: 10,
+          paddingHorizontal: SCREEN_PADDING,
+        }}>
+        {items.map(item => (
+          <ContentCard key={item.id} item={item} />
+        ))}
+      </ScrollView>
+    </View>
+  );
+}
+
+function ContentCard({ item }: { item: ContentItem }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={item.title}
+      style={{ width: CONTENT_CARD_WIDTH }}>
+      <StripePlaceholder label="CONTENT THUMB 4:3" aspectRatio={220 / 140} />
+      <Text
+        className="mt-2.5 text-[13.5px] font-semibold text-foreground"
+        style={{ lineHeight: 18 }}
+        numberOfLines={2}>
+        {item.title}
+      </Text>
+      <Text className="mt-1 text-[11.5px] text-muted-foreground">
+        {item.author} · 좋아요 {item.likes}
+      </Text>
+    </Pressable>
+  );
+}
+
+function ProductCarousel({ items }: { items: Product[] }) {
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{
+        gap: 10,
+        paddingHorizontal: SCREEN_PADDING,
+        marginBottom: 26,
+      }}>
+      {items.map((product) => (
+        <ProductCard key={product.id} item={product} />
+      ))}
+    </ScrollView>
+  );
+}
+
+function ProductCard({ item }: { item: Product }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={item.name}
+      style={{ width: PRODUCT_CARD_WIDTH }}>
+      <StripePlaceholder label="PRODUCT" square />
+      <Text className="mt-2 text-[11px] text-muted-foreground">{item.brand}</Text>
+      <Text
+        className="text-[13px] font-semibold text-foreground"
+        style={{ lineHeight: 17 }}
+        numberOfLines={2}>
+        {item.name}
+      </Text>
+      <View className="mt-0.5 flex-row items-baseline" style={{ gap: 5 }}>
+        <Text className="text-[13px] font-extrabold" style={{ color: BRAND.dark }}>
+          {item.discount}
+        </Text>
+        <Text className="text-[13.5px] font-bold text-foreground">{item.price}</Text>
+      </View>
+    </Pressable>
+  );
+}
+
+function ExperienceCarousel({ items }: { items: Experience[] }) {
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{
+        gap: 10,
+        paddingHorizontal: SCREEN_PADDING,
+        marginBottom: 26,
+      }}>
+      {items.map((experience) => (
+        <ExperienceCard key={experience.id} item={experience} />
+      ))}
+    </ScrollView>
+  );
+}
+
+function ExperienceCard({ item }: { item: Experience }) {
+  const isClosing = item.badge === '마감임박';
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={item.title}
+      style={{ width: EXPERIENCE_CARD_WIDTH }}>
+      <View className="relative">
+        <StripePlaceholder
+          label="EXPERIENCE PHOTO"
+          height={EXPERIENCE_IMAGE_HEIGHT}
+        />
+        <View
+          className="absolute left-2 top-2 rounded-full"
+          style={{
+            backgroundColor: isClosing ? BRAND.overlay : BRAND.accent,
+            paddingHorizontal: 8,
+            paddingVertical: 4,
+          }}>
+          <Text className="text-[10.5px] font-bold text-primary-foreground">{item.badge}</Text>
+        </View>
+      </View>
+      <Text
+        className="mt-2.5 text-[13.5px] font-semibold text-foreground"
+        style={{ lineHeight: 18 }}
+        numberOfLines={2}>
+        {item.title}
+      </Text>
+      <Text className="mt-0.5 text-[11.5px] text-muted-foreground">
+        {item.location} · {item.brand}
+      </Text>
+    </Pressable>
+  );
+}
+
+function MentorList({ items }: { items: Mentor[] }) {
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{
+        gap: 12,
+        paddingHorizontal: SCREEN_PADDING,
+        marginBottom: 26,
+      }}>
+      {items.map((mentor) => (
+        <Pressable
+          key={mentor.id}
+          accessibilityRole="button"
+          accessibilityLabel={mentor.name}
+          className="items-center"
+          style={{ width: MENTOR_WIDTH }}>
+          <StripePlaceholder label="MENTOR" circle />
+          <Text
+            className="mt-1.5 text-[11.5px] font-semibold text-foreground"
+            numberOfLines={1}>
+            {mentor.name}
+          </Text>
+        </Pressable>
+      ))}
+    </ScrollView>
+  );
+}
+
+function PostList({ items }: { items: Post[] }) {
+  return (
+    <View className="px-5 pb-6" style={{ gap: 14 }}>
+      {items.map((post) => (
+        <Pressable
+          key={post.id}
+          accessibilityRole="button"
+          accessibilityLabel={post.title}
+          className="rounded-2xl bg-card p-3.5"
+          style={{
+            shadowColor: BRAND.dark,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.06,
+            shadowRadius: 8,
+            elevation: 1,
+          }}>
+          <Text
+            className="text-[13.5px] font-semibold text-foreground"
+            style={{ lineHeight: 19 }}
+            numberOfLines={2}>
+            {post.title}
+          </Text>
+          <Text className="mt-1.5 text-[11.5px] text-muted-foreground">
+            댓글 {post.comments} · 좋아요 {post.likes}
+          </Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+

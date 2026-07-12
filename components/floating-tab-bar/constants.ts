@@ -24,6 +24,6 @@ export const TAB_BAR_FADE_COLOR = {
 };
 export const TAB_BAR_FADE_EXTRA_HEIGHT = 36;
 
-export const TAB_ICON_SIZE = 25;
+export const TAB_ICON_SIZE = 24;
 export const TAB_PRESS_SCALE = 1.08;
 export const TAB_PRESS_SPRING = { damping: 14, stiffness: 420, mass: 0.45 };

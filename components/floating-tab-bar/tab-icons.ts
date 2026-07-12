@@ -1,23 +1,33 @@
-import { Ionicons } from '@expo/vector-icons';
-import * as React from 'react';
-
-export type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
+import type { ImageSourcePropType } from 'react-native';
 
 export type TabIconConfig = {
-  outline: IoniconsName;
-  filled: IoniconsName;
+  default: ImageSourcePropType;
+  selected: ImageSourcePropType;
   size?: number;
-  showLabel?: boolean;
+  selectedOffsetY?: number;
 };
 
-// Ionicons ships real outline/filled pairs, so the selected tab can swap the
-// glyph itself instead of faking a "solid" look by filling an outline icon.
 export const TAB_ICONS: Record<string, TabIconConfig> = {
-  home: { outline: 'home-outline', filled: 'home' },
-  search: { outline: 'search-outline', filled: 'search' },
-  create: { outline: 'add-circle-outline', filled: 'add-circle', size: 32, showLabel: false },
-  notifications: { outline: 'notifications-outline', filled: 'notifications' },
-  profile: { outline: 'person-outline', filled: 'person' },
+  home: {
+    default: require('@/assets/icons/tabbar/home-outline.png'),
+    selected: require('@/assets/icons/tabbar/home-solid.png'),
+  },
+  search: {
+    default: require('@/assets/icons/tabbar/shopping-outline.png'),
+    selected: require('@/assets/icons/tabbar/shopping-solid.png'),
+  },
+  community: {
+    default: require('@/assets/icons/tabbar/community-outline.png'),
+    selected: require('@/assets/icons/tabbar/community-solid.png'),
+  },
+  experience: {
+    default: require('@/assets/icons/tabbar/experience-outline.png'),
+    selected: require('@/assets/icons/tabbar/experience-solid.png'),
+  },
+  profile: {
+    default: require('@/assets/icons/tabbar/profile-outline.png'),
+    selected: require('@/assets/icons/tabbar/profile-solid.png'),
+  },
 };
 
 export const DEFAULT_TAB_ICON = TAB_ICONS.home;

@@ -1,7 +1,5 @@
-import { Text } from '@/components/ui/text';
-import { Ionicons } from '@expo/vector-icons';
 import * as React from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 import { TAB_ICON_SIZE, TAB_ITEM_HEIGHT, TAB_PRESS_SCALE, TAB_PRESS_SPRING } from './constants';
@@ -46,8 +44,9 @@ function TabBarButtonImpl({
   const handlePressOut = React.useCallback(() => {
     pressScale.value = withSpring(1, TAB_PRESS_SPRING);
   }, [pressScale]);
-  const color = isFocused ? activeColor : inactiveColor;
-  const showLabel = icon.showLabel ?? true;
+  const defaultTint = inactiveColor;
+  const selectedTint = activeColor;
+  const iconSize = icon.size ?? TAB_ICON_SIZE;
 
   return (
     <Pressable
@@ -61,16 +60,45 @@ function TabBarButtonImpl({
       hitSlop={8}
       style={styles.buttonWrapper}>
       <Animated.View style={[styles.item, pressStyle]}>
-        <Ionicons
-          name={isFocused ? icon.filled : icon.outline}
-          size={icon.size ?? TAB_ICON_SIZE}
-          color={color}
-        />
-        {showLabel && (
-          <Text numberOfLines={1} style={{ color }} className="text-[11px] font-medium">
-            {label}
-          </Text>
-        )}
+        <View style={[styles.iconFrame, { width: iconSize, height: iconSize }]}>
+          <Image
+            source={icon.default}
+            resizeMode="contain"
+            fadeDuration={0}
+            accessibilityIgnoresInvertColors
+            style={[
+              styles.icon,
+              {
+                tintColor: defaultTint,
+                opacity: isFocused ? 0 : 1,
+                width: iconSize,
+                height: iconSize,
+              },
+            ]}
+          />
+          <Image
+            source={icon.selected}
+            resizeMode="contain"
+            fadeDuration={0}
+            accessibilityIgnoresInvertColors
+            style={[
+              styles.icon,
+              {
+                tintColor: selectedTint,
+                opacity: isFocused ? 1 : 0,
+                width: iconSize,
+                height: iconSize,
+              },
+            ]}
+          />
+        </View>
+        <Text
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.78}
+          style={[styles.label, { color: isFocused ? selectedTint : defaultTint }, isFocused && styles.focusedLabel]}>
+          {label}
+        </Text>
       </Animated.View>
     </Pressable>
   );
@@ -85,10 +113,29 @@ const styles = StyleSheet.create({
   item: {
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 2,
+    justifyContent: 'flex-start',
     height: TAB_ITEM_HEIGHT,
+    paddingTop: 4,
     width: '100%',
+  },
+  iconFrame: {
+    position: 'relative',
+    flexShrink: 0,
+    overflow: 'hidden',
+  },
+  icon: {
+    ...StyleSheet.absoluteFill,
+  },
+  label: {
+    marginTop: 3,
+    maxWidth: '100%',
+    fontSize: 10,
+    fontWeight: '500',
+    lineHeight: 12,
+    textAlign: 'center',
+  },
+  focusedLabel: {
+    fontWeight: '700',
   },
 });
 

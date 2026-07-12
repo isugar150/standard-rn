@@ -17,7 +17,8 @@ import { useTabIndicatorStyle } from './use-tab-indicator-style';
 type TabBarSurfaceProps = Pick<BottomTabBarProps, 'state' | 'descriptors'> & {
   bottom: number;
   colorScheme: 'light' | 'dark';
-  foregroundColor: string;
+  activeColor: string;
+  inactiveColor: string;
   onPress: (routeKey: string, routeName: string) => void;
   onLongPress: (routeKey: string) => void;
 };
@@ -27,7 +28,8 @@ function TabBarSurfaceImpl({
   descriptors,
   bottom,
   colorScheme,
-  foregroundColor,
+  activeColor,
+  inactiveColor,
   onPress,
   onLongPress,
 }: TabBarSurfaceProps) {
@@ -73,8 +75,8 @@ function TabBarSurfaceImpl({
                 label={label}
                 icon={TAB_ICONS[route.name] ?? DEFAULT_TAB_ICON}
                 isFocused={isFocused}
-                activeColor={foregroundColor}
-                inactiveColor={foregroundColor}
+                activeColor={activeColor}
+                inactiveColor={inactiveColor}
                 onPress={onPress}
                 onLongPress={onLongPress}
               />

@@ -41,6 +41,16 @@ module.exports = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        brand: {
+          DEFAULT: '#365154',
+          accent: '#21a3a3',
+          accentText: '#1a7a7a',
+          accentSoft: 'rgba(33, 199, 199, 0.16)',
+          cream: '#F6F4EE',
+          muted: 'rgba(54, 81, 84, 0.2)',
+          mutedText: '#7a8a8a',
+          overlay: 'rgba(54, 81, 84, 0.75)',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',

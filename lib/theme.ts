@@ -57,6 +57,19 @@ export const THEME = {
   },
 };
 
+export const BRAND = {
+  dark: '#365154',
+  accent: '#21a3a3',
+  accentText: '#1a7a7a',
+  accentSoft: 'rgba(33, 199, 199, 0.16)',
+  cream: '#F6F4EE',
+  muted: 'rgba(54, 81, 84, 0.2)',
+  mutedText: '#7a8a8a',
+  overlay: 'rgba(54, 81, 84, 0.75)',
+  stripeBg: 'rgba(54, 81, 84, 0.06)',
+  stripeBorder: 'rgba(54, 81, 84, 0.12)',
+} as const;
+
 export const NAV_THEME: Record<'light' | 'dark', Theme> = {
   light: {
     ...DefaultTheme,
