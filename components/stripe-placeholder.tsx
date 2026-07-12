@@ -1,5 +1,5 @@
 import { Text } from '@/components/ui/text';
-import { BRAND } from '@/lib/theme';
+import { useBrandColor } from '@/lib/theme';
 import { cn } from '@/lib/utils';
 import { type DimensionValue, View } from 'react-native';
 import Svg, { Defs, Line, Pattern, Rect } from 'react-native-svg';
@@ -21,6 +21,7 @@ export function StripePlaceholder({
   aspectRatio,
   circle,
 }: StripePlaceholderProps) {
+  const palette = useBrandColor();
   const resolvedWidth = width ?? (circle ? 64 : square ? 150 : undefined);
   const resolvedHeight = height ?? (circle ? 64 : square ? 150 : 140);
 
@@ -31,9 +32,9 @@ export function StripePlaceholder({
         width: resolvedWidth,
         height: resolvedHeight,
         aspectRatio: typeof resolvedWidth === 'number' ? undefined : aspectRatio,
-        backgroundColor: BRAND.stripeBg,
+        backgroundColor: palette.stripeBg,
         borderWidth: circle ? 1.5 : 1,
-        borderColor: BRAND.stripeBorder,
+        borderColor: palette.stripeBorder,
       }}>
       <Svg width="100%" height="100%">
         <Defs>
@@ -48,7 +49,7 @@ export function StripePlaceholder({
               y1="0"
               x2="0"
               y2="12"
-              stroke="rgba(54, 81, 84, 0.18)"
+              stroke={palette.muted}
               strokeWidth="6"
             />
           </Pattern>
@@ -56,9 +57,7 @@ export function StripePlaceholder({
         <Rect width="100%" height="100%" fill="url(#stripe-pattern)" />
       </Svg>
       <View className="absolute inset-0 items-center justify-center">
-        <Text
-          className="text-[10px] font-medium"
-          style={{ color: 'rgba(54, 81, 84, 0.55)' }}>
+        <Text className="text-[10px] font-medium text-muted-foreground">
           {label}
         </Text>
       </View>

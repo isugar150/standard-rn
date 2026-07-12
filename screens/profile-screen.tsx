@@ -1,8 +1,7 @@
 import { FLOATING_TAB_BAR_CLEARANCE } from '@/components/floating-tab-bar/constants';
-import { StripePlaceholder } from '@/components/stripe-placeholder';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import { BRAND } from '@/lib/theme';
+import { useBrandColor } from '@/lib/theme';
 import { useRouter } from 'expo-router';
 import {
   BellIcon,
@@ -20,7 +19,7 @@ import {
   UserPlusIcon,
 } from 'lucide-react-native';
 import * as React from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Image, type ImageSourcePropType, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const SCREEN_PADDING = 20;
@@ -32,6 +31,7 @@ type Baby = {
   id: string;
   name: string;
   dday: number;
+  image: ImageSourcePropType;
 };
 
 type MenuRow = {
@@ -51,11 +51,22 @@ type MenuSection = {
 const USER = {
   name: '채원님',
   email: 'chaewon@email.com',
+  image: require('@/assets/images/community/avatar-chaewon.png'),
 };
 
 const BABIES: Baby[] = [
-  { id: 'baby-1', name: '이준이', dday: 186 },
-  { id: 'baby-2', name: '하은이', dday: 920 },
+  {
+    id: 'baby-1',
+    name: '이준이',
+    dday: 186,
+    image: require('@/assets/images/home/baby-leejun.png'),
+  },
+  {
+    id: 'baby-2',
+    name: '하은이',
+    dday: 920,
+    image: require('@/assets/images/home/baby-haeun.png'),
+  },
 ];
 
 const SECTIONS: MenuSection[] = [
@@ -113,10 +124,7 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView
-      edges={['top']}
-      className="flex-1"
-      style={{ backgroundColor: BRAND.cream }}>
+    <SafeAreaView edges={['top']} className="flex-1 bg-brand-cream">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: FLOATING_TAB_BAR_CLEARANCE }}>
@@ -132,9 +140,7 @@ export default function ProfileScreen() {
                 paddingBottom: 10,
                 paddingTop: idx === 0 ? 0 : 4,
               }}>
-              <Text className="text-[13.5px] font-bold" style={{ color: '#2a2a2a' }}>
-                {section.title}
-              </Text>
+              <Text className="text-[13.5px] font-bold text-foreground">{section.title}</Text>
             </View>
             <MenuSectionCard
               rows={section.rows}
@@ -149,6 +155,8 @@ export default function ProfileScreen() {
 }
 
 function Header() {
+  const palette = useBrandColor();
+
   return (
     <View
       style={{
@@ -161,17 +169,19 @@ function Header() {
       }}>
       <Text
         className="text-xl font-extrabold"
-        style={{ color: BRAND.dark, letterSpacing: -0.3 }}>
+        style={{ color: palette.brand, letterSpacing: -0.3 }}>
         마이
       </Text>
       <Pressable hitSlop={10} accessibilityRole="button" accessibilityLabel="알림">
-        <Icon as={BellIcon} size={22} color={BRAND.dark} />
+        <Icon as={BellIcon} size={22} color={palette.brand} />
       </Pressable>
     </View>
   );
 }
 
 function ProfileCard({ onEditPress }: { onEditPress: () => void }) {
+  const palette = useBrandColor();
+
   return (
     <Pressable
       onPress={onEditPress}
@@ -185,26 +195,24 @@ function ProfileCard({ onEditPress }: { onEditPress: () => void }) {
         marginTop: 6,
         marginBottom: 20,
       }}>
-      <StripePlaceholder label="USER" circle width={60} height={60} />
+      <Image
+        source={USER.image}
+        accessibilityLabel={USER.name}
+        style={{ width: 60, height: 60, borderRadius: 999 }}
+      />
       <View style={{ flex: 1 }}>
-        <Text className="text-[16px] font-extrabold" style={{ color: '#2a2a2a' }}>
-          {USER.name}
-        </Text>
-        <Text className="mt-0.5 text-[12px]" style={{ color: '#888' }}>
-          {USER.email}
-        </Text>
+        <Text className="text-[16px] font-extrabold text-foreground">{USER.name}</Text>
+        <Text className="mt-0.5 text-[12px] text-muted-foreground">{USER.email}</Text>
       </View>
       <View
         style={{
           borderWidth: 1,
-          borderColor: 'rgba(54,81,84,0.2)',
+          borderColor: palette.muted,
           paddingHorizontal: 12,
           paddingVertical: 7,
           borderRadius: 999,
         }}>
-        <Text className="text-[12px] font-bold" style={{ color: BRAND.dark }}>
-          프로필 수정
-        </Text>
+        <Text className="text-[12px] font-bold text-brand">프로필 수정</Text>
       </View>
     </Pressable>
   );
@@ -217,16 +225,18 @@ function BabyManagementCard({
   babies: Baby[];
   onPress: (baby: Baby) => void;
 }) {
+  const palette = useBrandColor();
+
   return (
     <View
       style={{
         marginHorizontal: SCREEN_PADDING,
         marginBottom: 20,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: palette.surface,
         borderRadius: 16,
         padding: 14,
         paddingHorizontal: 16,
-        shadowColor: BRAND.dark,
+        shadowColor: palette.brand,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.06,
         shadowRadius: 8,
@@ -239,31 +249,27 @@ function BabyManagementCard({
           justifyContent: 'space-between',
           marginBottom: 12,
         }}>
-        <Text className="text-[13.5px] font-bold" style={{ color: '#2a2a2a' }}>
-          나의 아기 관리
-        </Text>
-        <Text className="text-[11.5px] font-semibold" style={{ color: BRAND.accent }}>
-          + 아기 추가
-        </Text>
+        <Text className="text-[13.5px] font-bold text-foreground">나의 아기 관리</Text>
+        <Text className="text-[11.5px] font-semibold text-brand-accent">+ 아기 추가</Text>
       </View>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ gap: 10 }}>
-        {babies.map(baby => (
+        {babies.map((baby) => (
           <Pressable
             key={baby.id}
             onPress={() => onPress(baby)}
             accessibilityRole="button"
             accessibilityLabel={`${baby.name} 상세`}
             style={{ width: 72, alignItems: 'center' }}>
-            <StripePlaceholder label="BABY" circle width={56} height={56} />
-            <Text className="mt-1.5 text-[12px] font-bold" style={{ color: '#2a2a2a' }}>
-              {baby.name}
-            </Text>
-            <Text className="mt-0.5 text-[10px]" style={{ color: '#999' }}>
-              D+{baby.dday}
-            </Text>
+            <Image
+              source={baby.image}
+              accessibilityLabel={baby.name}
+              style={{ width: 56, height: 56, borderRadius: 999 }}
+            />
+            <Text className="mt-1.5 text-[12px] font-bold text-foreground">{baby.name}</Text>
+            <Text className="mt-0.5 text-[10px] text-muted-foreground">D+{baby.dday}</Text>
           </Pressable>
         ))}
       </ScrollView>
@@ -280,14 +286,16 @@ function MenuSectionCard({
   onPressRow: (row: MenuRow) => void;
   isLast: boolean;
 }) {
+  const palette = useBrandColor();
+
   return (
     <View
       style={{
         marginHorizontal: SCREEN_PADDING,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: palette.surface,
         borderRadius: 16,
         overflow: 'hidden',
-        shadowColor: BRAND.dark,
+        shadowColor: palette.brand,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.06,
         shadowRadius: 8,
@@ -315,8 +323,9 @@ function MenuRowItem({
   isLast: boolean;
   onPress: () => void;
 }) {
-  const iconColor = row.isDanger ? DANGER_COLOR : BRAND.dark;
-  const labelColor = row.isDanger ? DANGER_COLOR : '#2a2a2a';
+  const palette = useBrandColor();
+  const iconColor = row.isDanger ? DANGER_COLOR : palette.brand;
+  const labelColor = row.isDanger ? DANGER_COLOR : palette.brand;
 
   return (
     <Pressable
@@ -330,18 +339,16 @@ function MenuRowItem({
         paddingVertical: ROW_VERTICAL_PADDING,
         paddingHorizontal: ROW_HORIZONTAL_PADDING,
         borderBottomWidth: isLast ? 0 : 1,
-        borderBottomColor: 'rgba(54,81,84,0.07)',
+        borderBottomColor: palette.subtle,
       }}>
       <Icon as={row.icon} size={19} color={iconColor} strokeWidth={2} />
       <Text className="flex-1 text-[13.5px] font-medium" style={{ color: labelColor }}>
         {row.label}
       </Text>
       {row.count !== undefined ? (
-        <Text className="text-[12px] font-bold mr-0.5" style={{ color: BRAND.accent }}>
-          {row.count}
-        </Text>
+        <Text className="mr-0.5 text-[12px] font-bold text-brand-accent">{row.count}</Text>
       ) : null}
-      <Icon as={ChevronRightIcon} size={16} color="#c3cccc" strokeWidth={2} />
+      <Icon as={ChevronRightIcon} size={16} color={palette.mutedText} strokeWidth={2} />
     </Pressable>
   );
 }

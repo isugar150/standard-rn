@@ -1,16 +1,11 @@
 import { FLOATING_TAB_BAR_CLEARANCE } from '@/components/floating-tab-bar/constants';
-import { StripePlaceholder } from '@/components/stripe-placeholder';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import { BRAND } from '@/lib/theme';
+import { useBrandColor } from '@/lib/theme';
 import { useRouter } from 'expo-router';
-import {
-  CameraIcon,
-  HeartIcon,
-  SearchIcon,
-} from 'lucide-react-native';
+import { CameraIcon, HeartIcon, SearchIcon } from 'lucide-react-native';
 import * as React from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Image, type ImageSourcePropType, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const SCREEN_PADDING = 20;
@@ -27,18 +22,7 @@ type Experience = {
   applicants: number;
   capacity: number;
   liked?: boolean;
-};
-
-const STATUS_BG: Record<StatusKind, string> = {
-  모집중: PROMO_ACCENT,
-  마감임박: 'rgba(54,81,84,0.75)',
-  NEW: '#365154',
-};
-
-const STATUS_TEXT_COLOR: Record<StatusKind, string> = {
-  모집중: '#0a3d3d',
-  마감임박: '#FFFFFF',
-  NEW: '#FFFFFF',
+  image: ImageSourcePropType;
 };
 
 const STATUS_FONT_SIZE: Record<StatusKind, number> = {
@@ -50,6 +34,7 @@ const STATUS_FONT_SIZE: Record<StatusKind, number> = {
 const RECOMMENDED_EXPERIENCE = {
   title: '뉴본 카시트 3일 체험단',
   subtitle: '서울 강남 · 라라베베 진행 · 신청마감 D-2',
+  image: require('@/assets/images/experience/featured-car-seat-trial.png'),
 };
 
 const EXPERIENCES: Experience[] = [
@@ -62,6 +47,7 @@ const EXPERIENCES: Experience[] = [
     applicants: 14,
     capacity: 20,
     liked: false,
+    image: require('@/assets/images/experience/car-seat-trial.png'),
   },
   {
     id: 'exp-2',
@@ -72,6 +58,7 @@ const EXPERIENCES: Experience[] = [
     applicants: 15,
     capacity: 15,
     liked: false,
+    image: require('@/assets/images/experience/stroller-class.png'),
   },
   {
     id: 'exp-3',
@@ -82,6 +69,7 @@ const EXPERIENCES: Experience[] = [
     applicants: 4,
     capacity: 10,
     liked: true,
+    image: require('@/assets/images/experience/weaning-class.png'),
   },
   {
     id: 'exp-4',
@@ -91,6 +79,7 @@ const EXPERIENCES: Experience[] = [
     applicants: 2,
     capacity: 10,
     liked: false,
+    image: require('@/assets/images/experience/massage-class.png'),
   },
   {
     id: 'exp-5',
@@ -100,6 +89,7 @@ const EXPERIENCES: Experience[] = [
     applicants: 17,
     capacity: 20,
     liked: false,
+    image: require('@/assets/images/experience/skincare-trial.png'),
   },
 ];
 
@@ -107,10 +97,7 @@ export default function ExperienceScreen() {
   const router = useRouter();
 
   return (
-    <SafeAreaView
-      edges={['top']}
-      className="flex-1"
-      style={{ backgroundColor: BRAND.cream }}>
+    <SafeAreaView edges={['top']} className="flex-1 bg-brand-cream">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: FLOATING_TAB_BAR_CLEARANCE }}>
@@ -134,7 +121,7 @@ export default function ExperienceScreen() {
             paddingBottom: 26,
             gap: 20,
           }}>
-          {EXPERIENCES.map(experience => (
+          {EXPERIENCES.map((experience) => (
             <ExperienceCard key={experience.id} experience={experience} />
           ))}
         </View>
@@ -150,6 +137,7 @@ function Header({
   onSearchPress: () => void;
   onWishlistPress: () => void;
 }) {
+  const palette = useBrandColor();
   return (
     <View
       style={{
@@ -163,9 +151,7 @@ function Header({
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
-        <Text
-          className="text-xl font-extrabold"
-          style={{ color: BRAND.dark, letterSpacing: -0.3 }}>
+        <Text className="text-xl font-extrabold text-brand" style={{ letterSpacing: -0.3 }}>
           체험
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
@@ -175,7 +161,7 @@ function Header({
             accessibilityLabel="찜"
             onPress={onWishlistPress}>
             <View style={{ position: 'relative' }}>
-              <Icon as={HeartIcon} size={21} color={BRAND.dark} />
+              <Icon as={HeartIcon} size={21} color={palette.brand} />
               <View
                 style={{
                   position: 'absolute',
@@ -186,9 +172,7 @@ function Header({
                   paddingVertical: 1,
                   borderRadius: 999,
                 }}>
-                <Text
-                  className="text-[9px] font-extrabold"
-                  style={{ color: '#0a3d3d' }}>
+                <Text className="text-[9px] font-extrabold" style={{ color: '#0a3d3d' }}>
                   5
                 </Text>
               </View>
@@ -199,7 +183,7 @@ function Header({
             accessibilityRole="button"
             accessibilityLabel="검색"
             onPress={onSearchPress}>
-            <Icon as={SearchIcon} size={22} color={BRAND.dark} />
+            <Icon as={SearchIcon} size={22} color={palette.brand} />
           </Pressable>
         </View>
       </View>
@@ -208,22 +192,23 @@ function Header({
 }
 
 function SNSCard() {
+  const palette = useBrandColor();
   return (
     <View
       style={{
         marginHorizontal: SCREEN_PADDING,
         marginBottom: 14,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: palette.surface,
         borderRadius: 18,
         padding: 14,
         paddingHorizontal: 16,
-        shadowColor: BRAND.dark,
+        shadowColor: palette.brand,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.06,
         shadowRadius: 8,
         elevation: 1,
       }}>
-      <Text className="text-[13.5px] font-bold mb-3" style={{ color: '#2a2a2a' }}>
+      <Text className="mb-3 text-[13.5px] font-bold" style={{ color: palette.mutedText }}>
         나의 SNS 연결
       </Text>
       <View style={{ flexDirection: 'row', gap: 10 }}>
@@ -254,12 +239,10 @@ function SNSCard() {
             </Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text className="text-[12px] font-bold" style={{ color: '#2a2a2a' }}>
+            <Text className="text-[12px] font-bold" style={{ color: palette.mutedText }}>
               네이버 블로그
             </Text>
-            <Text
-              className="mt-0.5 text-[10.5px] font-semibold"
-              style={{ color: '#03A34A' }}>
+            <Text className="mt-0.5 text-[10.5px] font-semibold" style={{ color: '#03A34A' }}>
               연결됨
             </Text>
           </View>
@@ -274,7 +257,7 @@ function SNSCard() {
             gap: 10,
             padding: 10,
             borderRadius: 14,
-            backgroundColor: 'rgba(54,81,84,0.05)',
+            backgroundColor: palette.subtle,
           }}>
           <View
             style={{
@@ -289,10 +272,10 @@ function SNSCard() {
             <Icon as={CameraIcon} size={16} color="#FFFFFF" />
           </View>
           <View style={{ flex: 1 }}>
-            <Text className="text-[12px] font-bold" style={{ color: '#2a2a2a' }}>
+            <Text className="text-[12px] font-bold" style={{ color: palette.mutedText }}>
               인스타그램
             </Text>
-            <Text className="mt-0.5 text-[10.5px] font-semibold" style={{ color: '#999' }}>
+            <Text className="mt-0.5 text-[10.5px] font-semibold text-muted-foreground">
               연결하기 →
             </Text>
           </View>
@@ -303,16 +286,17 @@ function SNSCard() {
 }
 
 function StatusCard() {
+  const palette = useBrandColor();
   return (
     <View
       style={{
         marginHorizontal: SCREEN_PADDING,
         marginBottom: 22,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: palette.surface,
         borderRadius: 18,
         padding: 14,
         paddingHorizontal: 16,
-        shadowColor: BRAND.dark,
+        shadowColor: palette.brand,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.06,
         shadowRadius: 8,
@@ -325,12 +309,10 @@ function StatusCard() {
           justifyContent: 'space-between',
           marginBottom: 12,
         }}>
-        <Text className="text-[13.5px] font-bold" style={{ color: '#2a2a2a' }}>
+        <Text className="text-[13.5px] font-bold" style={{ color: palette.mutedText }}>
           나의 체험 현황
         </Text>
-        <Text className="text-[11.5px] font-semibold" style={{ color: BRAND.accent }}>
-          전체보기
-        </Text>
+        <Text className="text-[11.5px] font-semibold text-brand-accent">전체보기</Text>
       </View>
       <View style={{ flexDirection: 'row' }}>
         {[
@@ -344,16 +326,14 @@ function StatusCard() {
               flex: 1,
               alignItems: 'center',
               borderRightWidth: index < arr.length - 1 ? 1 : 0,
-              borderRightColor: 'rgba(54,81,84,0.08)',
+              borderRightColor: palette.subtleStrong,
             }}>
             <Text
               className="text-[18px] font-extrabold"
-              style={{ color: stat.highlight ? BRAND.dark : '#2a2a2a' }}>
+              style={{ color: stat.highlight ? palette.brand : palette.mutedText }}>
               {stat.count}
             </Text>
-            <Text className="mt-0.5 text-[10.5px]" style={{ color: '#888' }}>
-              {stat.label}
-            </Text>
+            <Text className="mt-0.5 text-[10.5px] text-muted-foreground">{stat.label}</Text>
           </View>
         ))}
       </View>
@@ -371,11 +351,11 @@ function RecommendBanner() {
         marginBottom: 26,
         position: 'relative',
       }}>
-      <StripePlaceholder
-        label="추천 체험 배너"
-        width="100%"
-        height={190}
-        square={false}
+      <Image
+        source={RECOMMENDED_EXPERIENCE.image}
+        accessibilityLabel={RECOMMENDED_EXPERIENCE.title}
+        style={{ width: '100%', height: 190, borderRadius: 16 }}
+        resizeMode="cover"
       />
       <View style={{ position: 'absolute', bottom: 16, left: 16, right: 16 }}>
         <Text
@@ -404,16 +384,32 @@ function RecommendBanner() {
 }
 
 function ExperienceCard({ experience }: { experience: Experience }) {
+  const palette = useBrandColor();
+  const STATUS_BG: Record<StatusKind, string> = {
+    모집중: PROMO_ACCENT,
+    마감임박: '#2A3D3F',
+    NEW: palette.brand,
+  };
+  const STATUS_TEXT_COLOR: Record<StatusKind, string> = {
+    모집중: '#0a3d3d',
+    마감임박: '#FFFFFF',
+    NEW: palette.onBrand,
+  };
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={experience.title}
       onPress={() => undefined}>
       <View style={{ position: 'relative' }}>
-        <StripePlaceholder
-          label="EXPERIENCE PHOTO"
-          width="100%"
-          height={180}
+        <Image
+          source={experience.image}
+          accessibilityLabel={experience.title}
+          style={{ width: '100%', height: 180, borderRadius: 16 }}
+          resizeMode="cover"
+        />
+        <View
+          pointerEvents="none"
+          className="absolute inset-0 rounded-2xl bg-transparent dark:bg-black/20"
         />
         <View
           style={{
@@ -442,14 +438,16 @@ function ExperienceCard({ experience }: { experience: Experience }) {
             width: 26,
             height: 26,
             borderRadius: 13,
-            backgroundColor: 'rgba(255,255,255,0.9)',
+            backgroundColor: palette.surface,
+            borderWidth: 1,
+            borderColor: palette.muted,
             alignItems: 'center',
             justifyContent: 'center',
           }}>
           <Icon
             as={HeartIcon}
             size={14}
-            color={experience.liked ? PROMO_ACCENT : BRAND.dark}
+            color={experience.liked ? PROMO_ACCENT : palette.brand}
             fill={experience.liked ? PROMO_ACCENT : 'transparent'}
             strokeWidth={2}
           />
@@ -460,11 +458,11 @@ function ExperienceCard({ experience }: { experience: Experience }) {
         style={{ lineHeight: 18 }}>
         {experience.title}
       </Text>
-      <Text className="mt-1 text-[11.5px]" style={{ color: '#888' }}>
+      <Text className="mt-1 text-[11.5px] text-muted-foreground">
         {experience.location}
         {experience.organizer ? ` · ${experience.organizer}` : ''}
       </Text>
-      <Text className="mt-1.5 text-[11px]" style={{ color: '#999' }}>
+      <Text className="mt-1.5 text-[11px] text-muted-foreground">
         신청 {experience.applicants}명 · 모집 {experience.capacity}명
         {experience.status === '마감임박' ? ' (마감)' : ''}
       </Text>

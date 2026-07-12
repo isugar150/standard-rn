@@ -1,16 +1,18 @@
 import { FLOATING_TAB_BAR_CLEARANCE } from '@/components/floating-tab-bar/constants';
-import { StripePlaceholder } from '@/components/stripe-placeholder';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import { BRAND } from '@/lib/theme';
+import { useBrandColor } from '@/lib/theme';
 import { useRouter } from 'expo-router';
 import { SearchIcon, XIcon } from 'lucide-react-native';
 import * as React from 'react';
 import {
+  Image,
+  type ImageSourcePropType,
   Pressable,
   ScrollView,
   StyleSheet,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -28,12 +30,14 @@ type ProductResult = {
   brand: string;
   name: string;
   price: string;
+  image: ImageSourcePropType;
 };
 type ExperienceResult = {
   id: string;
   title: string;
   location: string;
   status: string;
+  image: ImageSourcePropType;
 };
 type CommunityResult = {
   id: string;
@@ -41,7 +45,7 @@ type CommunityResult = {
   likes: number;
   comments: number;
 };
-type MentorResult = { id: string; name: string; followers: number };
+type MentorResult = { id: string; name: string; followers: number; image: ImageSourcePropType };
 
 const RECENT_SEARCHES: RecentSearch[] = [
   { id: 'r1', keyword: '카시트' },
@@ -67,8 +71,20 @@ const CATEGORIES: Category[] = [
 ];
 
 const PRODUCT_RESULTS: ProductResult[] = [
-  { id: 'p1', brand: '라라베베', name: '전연령 카시트 세이프 3', price: '129,000원' },
-  { id: 'p2', brand: '뽀득', name: '주니어 카시트 그로우', price: '159,000원' },
+  {
+    id: 'p1',
+    brand: '라라베베',
+    name: '전연령 카시트 세이프 3',
+    price: '129,000원',
+    image: require('@/assets/images/home/product-car-seat-v2.png'),
+  },
+  {
+    id: 'p2',
+    brand: '뽀득',
+    name: '주니어 카시트 그로우',
+    price: '159,000원',
+    image: require('@/assets/images/search/product-junior-car-seat.png'),
+  },
 ];
 
 const EXPERIENCE_RESULTS: ExperienceResult[] = [
@@ -77,6 +93,7 @@ const EXPERIENCE_RESULTS: ExperienceResult[] = [
     title: '뉴본 카시트 3일 체험단',
     location: '서울 강남 · 라라베베',
     status: '예약가능',
+    image: require('@/assets/images/experience/car-seat-trial.png'),
   },
 ];
 
@@ -90,7 +107,12 @@ const COMMUNITY_RESULTS: CommunityResult[] = [
 ];
 
 const MENTOR_RESULTS: MentorResult[] = [
-  { id: 'm1', name: '카시트 전문가 민지쌤', followers: 1204 },
+  {
+    id: 'm1',
+    name: '카시트 전문가 민지쌤',
+    followers: 1204,
+    image: require('@/assets/images/search/mentor-car-seat-minji.png'),
+  },
 ];
 
 const TAB_COUNTS: Record<SearchTab, number> = {
@@ -128,10 +150,7 @@ export default function SearchInputScreen() {
   };
 
   return (
-    <SafeAreaView
-      edges={['top']}
-      className="flex-1"
-      style={{ backgroundColor: BRAND.cream }}>
+    <SafeAreaView edges={['top']} className="flex-1 bg-brand-cream">
       <SearchBar
         query={query}
         onChangeQuery={setQuery}
@@ -152,11 +171,7 @@ export default function SearchInputScreen() {
             onSelectQuery={submitQuery}
           />
         ) : (
-          <Results
-            query={query}
-            activeTab={activeTab}
-            onSelectTab={setActiveTab}
-          />
+          <Results query={query} activeTab={activeTab} onSelectTab={setActiveTab} />
         )}
       </ScrollView>
     </SafeAreaView>
@@ -176,6 +191,7 @@ function SearchBar({
   onCancel: () => void;
   onSubmit: () => void;
 }) {
+  const palette = useBrandColor();
   return (
     <View
       style={{
@@ -191,14 +207,14 @@ function SearchBar({
           flexDirection: 'row',
           alignItems: 'center',
           gap: 8,
-          backgroundColor: '#FFFFFF',
+          backgroundColor: palette.surface,
           borderWidth: 1.5,
-          borderColor: BRAND.dark,
+          borderColor: palette.brand,
           borderRadius: 14,
           paddingHorizontal: 14,
           paddingVertical: 11,
         }}>
-        <Icon as={SearchIcon} size={18} color={BRAND.dark} />
+        <Icon as={SearchIcon} size={18} color={palette.brand} />
         <TextInput
           value={query}
           onChangeText={onChangeQuery}
@@ -209,7 +225,7 @@ function SearchBar({
           style={{
             flex: 1,
             fontSize: 13.5,
-            color: '#2a2a2a',
+            color: palette.brand,
             padding: 0,
           }}
         />
@@ -219,7 +235,7 @@ function SearchBar({
             hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel="검색어 지우기">
-            <Icon as={XIcon} size={16} color="#9aa5a5" strokeWidth={2.2} />
+            <Icon as={XIcon} size={16} color={palette.mutedText} strokeWidth={2.2} />
           </Pressable>
         ) : null}
       </View>
@@ -228,10 +244,7 @@ function SearchBar({
         hitSlop={8}
         accessibilityRole="button"
         accessibilityLabel="취소">
-        <Text
-          style={{ fontSize: 13, fontWeight: '600', color: '#666' }}>
-          취소
-        </Text>
+        <Text style={{ fontSize: 13, fontWeight: '600', color: palette.mutedText }}>취소</Text>
       </Pressable>
     </View>
   );
@@ -248,6 +261,7 @@ function Landing({
   categories: Category[];
   onSelectQuery: (keyword: string) => void;
 }) {
+  const palette = useBrandColor();
   return (
     <View>
       <View
@@ -260,9 +274,7 @@ function Landing({
           paddingBottom: 12,
         }}>
         <Text className="text-[15px] font-bold text-foreground">최근 검색어</Text>
-        <Text className="text-[11.5px]" style={{ color: '#999' }}>
-          전체삭제
-        </Text>
+        <Text className="text-[11.5px] text-muted-foreground">전체삭제</Text>
       </View>
       <ScrollView
         horizontal
@@ -272,7 +284,7 @@ function Landing({
           paddingHorizontal: SCREEN_PADDING,
           marginBottom: 24,
         }}>
-        {recents.map(r => (
+        {recents.map((r) => (
           <Pressable
             key={r.id}
             onPress={() => onSelectQuery(r.keyword)}
@@ -285,14 +297,10 @@ function Landing({
               paddingHorizontal: 12,
               paddingVertical: 8,
               borderRadius: 999,
-              backgroundColor: 'rgba(54,81,84,0.06)',
+              backgroundColor: palette.subtle,
             }}>
-            <Text
-              className="text-[12.5px] font-semibold"
-              style={{ color: BRAND.dark }}>
-              {r.keyword}
-            </Text>
-            <Icon as={XIcon} size={12} color="#9aa5a5" strokeWidth={2.4} />
+            <Text className="text-[12.5px] font-semibold text-brand">{r.keyword}</Text>
+            <Icon as={XIcon} size={12} color={palette.mutedText} strokeWidth={2.4} />
           </Pressable>
         ))}
       </ScrollView>
@@ -309,7 +317,7 @@ function Landing({
           paddingHorizontal: SCREEN_PADDING,
           paddingBottom: 26,
         }}>
-        {populars.map(p => (
+        {populars.map((p) => (
           <Pressable
             key={p.id}
             onPress={() => onSelectQuery(p.keyword)}
@@ -322,8 +330,8 @@ function Landing({
               paddingVertical: 9,
             }}>
             <Text
-              className="text-[14px] font-extrabold text-center"
-              style={{ width: 16, color: p.rank <= 2 ? PROMO_ACCENT : '#9aa5a5' }}>
+              className="text-center text-[14px] font-extrabold"
+              style={{ width: 16, color: p.rank <= 2 ? PROMO_ACCENT : palette.mutedText }}>
               {p.rank}
             </Text>
             <Text className="text-[13.5px] text-foreground">{p.keyword}</Text>
@@ -346,7 +354,7 @@ function Landing({
           paddingHorizontal: SCREEN_PADDING,
           marginBottom: 28,
         }}>
-        {categories.map(c => (
+        {categories.map((c) => (
           <Pressable
             key={c.id}
             onPress={() => onSelectQuery(c.label)}
@@ -356,13 +364,9 @@ function Landing({
               paddingHorizontal: 12,
               paddingVertical: 8,
               borderRadius: 999,
-              backgroundColor: 'rgba(54,81,84,0.06)',
+              backgroundColor: palette.subtle,
             }}>
-            <Text
-              className="text-[12.5px] font-semibold"
-              style={{ color: BRAND.dark }}>
-              {c.label}
-            </Text>
+            <Text className="text-[12.5px] font-semibold text-brand">{c.label}</Text>
           </Pressable>
         ))}
       </View>
@@ -370,15 +374,13 @@ function Landing({
       <View
         style={{
           height: 8,
-          backgroundColor: 'rgba(54,81,84,0.05)',
+          backgroundColor: palette.subtle,
           marginBottom: 20,
         }}
       />
 
       <View style={{ paddingHorizontal: SCREEN_PADDING, paddingBottom: 20 }}>
-        <Text
-          className="text-[12px]"
-          style={{ color: '#999' }}>
+        <Text className="text-[12px] text-muted-foreground">
           검색 결과는 상품 · 체험 · 커뮤니티 · 멘토로 구분되어 표시돼요
         </Text>
       </View>
@@ -400,10 +402,7 @@ function Results({
       <ResultsTabBar activeTab={activeTab} onSelect={onSelectTab} />
 
       {activeTab === 'all' || activeTab === 'product' ? (
-        <ProductResults
-          products={PRODUCT_RESULTS}
-          isAllTab={activeTab === 'all'}
-        />
+        <ProductResults products={PRODUCT_RESULTS} isAllTab={activeTab === 'all'} />
       ) : null}
 
       {activeTab === 'all' || activeTab === 'experience' ? (
@@ -411,10 +410,7 @@ function Results({
       ) : null}
 
       {activeTab === 'all' || activeTab === 'community' ? (
-        <CommunityResults
-          results={COMMUNITY_RESULTS}
-          isAllTab={activeTab === 'all'}
-        />
+        <CommunityResults results={COMMUNITY_RESULTS} isAllTab={activeTab === 'all'} />
       ) : null}
 
       {activeTab === 'all' || activeTab === 'mentor' ? (
@@ -431,6 +427,7 @@ function ResultsTabBar({
   activeTab: SearchTab;
   onSelect: (tab: SearchTab) => void;
 }) {
+  const palette = useBrandColor();
   return (
     <ScrollView
       horizontal
@@ -440,7 +437,7 @@ function ResultsTabBar({
         padding: 14,
         paddingHorizontal: SCREEN_PADDING,
       }}>
-      {(Object.keys(TAB_LABELS) as SearchTab[]).map(key => {
+      {(Object.keys(TAB_LABELS) as SearchTab[]).map((key) => {
         const isActive = key === activeTab;
         return (
           <Pressable
@@ -454,11 +451,11 @@ function ResultsTabBar({
               paddingHorizontal: 14,
               paddingVertical: 8,
               borderRadius: 999,
-              backgroundColor: isActive ? BRAND.dark : 'rgba(54,81,84,0.06)',
+              backgroundColor: isActive ? palette.brand : palette.subtle,
             }}>
             <Text
               className="text-[12.5px] font-bold"
-              style={{ color: isActive ? '#FFFFFF' : BRAND.dark }}>
+              style={{ color: isActive ? palette.onBrand : palette.brand }}>
               {TAB_LABELS[key]} {TAB_COUNTS[key]}
             </Text>
           </Pressable>
@@ -468,13 +465,10 @@ function ResultsTabBar({
   );
 }
 
-function ProductResults({
-  products,
-  isAllTab,
-}: {
-  products: ProductResult[];
-  isAllTab: boolean;
-}) {
+function ProductResults({ products, isAllTab }: { products: ProductResult[]; isAllTab: boolean }) {
+  const palette = useBrandColor();
+  const { width: screenWidth } = useWindowDimensions();
+  const productImageSize = (screenWidth - SCREEN_PADDING * 2 - 16) / 2;
   return (
     <View>
       <View
@@ -484,10 +478,7 @@ function ProductResults({
           paddingBottom: 12,
         }}>
         <Text className="text-[14px] font-bold text-foreground">
-          상품{' '}
-          <Text className="text-[14px] font-bold" style={{ color: BRAND.accent }}>
-            {products.length}
-          </Text>
+          상품 <Text className="text-[14px] font-bold text-brand-accent">{products.length}</Text>
         </Text>
       </View>
       <View
@@ -497,27 +488,25 @@ function ProductResults({
           paddingHorizontal: SCREEN_PADDING,
           marginBottom: 22,
         }}>
-        {products.map(p => (
+        {products.map((p) => (
           <Pressable
             key={p.id}
             accessibilityRole="button"
             accessibilityLabel={p.name}
-            style={{ flex: 1 }}>
-            <StripePlaceholder label="PRODUCT" aspectRatio={1} square />
-            <Text
-              className="mt-2 text-[11px] text-muted-foreground">
-              {p.brand}
-            </Text>
+            style={{ width: productImageSize }}>
+            <Image
+              source={p.image}
+              accessibilityLabel={p.name}
+              style={{ width: productImageSize, height: productImageSize, borderRadius: 16 }}
+              resizeMode="cover"
+            />
+            <Text className="mt-2 text-[11px] text-muted-foreground">{p.brand}</Text>
             <Text
               className="mt-1 text-[12.5px] font-semibold text-foreground"
               style={{ lineHeight: 17 }}>
               {p.name}
             </Text>
-            <Text
-              className="mt-0.5 text-[13px] font-bold"
-              style={{ color: BRAND.dark }}>
-              {p.price}
-            </Text>
+            <Text className="mt-0.5 text-[13px] font-bold text-brand">{p.price}</Text>
           </Pressable>
         ))}
       </View>
@@ -531,25 +520,17 @@ function ProductResults({
             alignItems: 'center',
             padding: 12,
             borderWidth: 1,
-            borderColor: 'rgba(54,81,84,0.15)',
+            borderColor: palette.muted,
             borderRadius: 12,
           }}>
-          <Text
-            className="text-[12.5px] font-bold"
-            style={{ color: BRAND.dark }}>
-            상품 결과 4개 더보기 ↓
-          </Text>
+          <Text className="text-[12.5px] font-bold text-brand">상품 결과 4개 더보기 ↓</Text>
         </Pressable>
       ) : null}
     </View>
   );
 }
 
-function ExperienceResults({
-  experiences,
-}: {
-  experiences: ExperienceResult[];
-}) {
+function ExperienceResults({ experiences }: { experiences: ExperienceResult[] }) {
   return (
     <View>
       <View
@@ -559,10 +540,7 @@ function ExperienceResults({
           paddingBottom: 12,
         }}>
         <Text className="text-[14px] font-bold text-foreground">
-          체험{' '}
-          <Text className="text-[14px] font-bold" style={{ color: BRAND.accent }}>
-            {experiences.length}
-          </Text>
+          체험 <Text className="text-[14px] font-bold text-brand-accent">{experiences.length}</Text>
         </Text>
       </View>
       <ScrollView
@@ -573,14 +551,19 @@ function ExperienceResults({
           paddingHorizontal: SCREEN_PADDING,
           marginBottom: 22,
         }}>
-        {experiences.map(e => (
+        {experiences.map((e) => (
           <Pressable
             key={e.id}
             accessibilityRole="button"
             accessibilityLabel={e.title}
             style={{ width: 200 }}>
             <View style={{ position: 'relative' }}>
-              <StripePlaceholder label="EXPERIENCE PHOTO" width={200} height={120} />
+              <Image
+                source={e.image}
+                accessibilityLabel={e.title}
+                style={{ width: 200, height: 120, borderRadius: 16 }}
+                resizeMode="cover"
+              />
               <View
                 style={{
                   position: 'absolute',
@@ -591,20 +574,13 @@ function ExperienceResults({
                   paddingVertical: 3,
                   borderRadius: 999,
                 }}>
-                <Text
-                  className="text-[10px] font-bold"
-                  style={{ color: '#FFFFFF' }}>
+                <Text className="text-[10px] font-bold" style={{ color: '#FFFFFF' }}>
                   {e.status}
                 </Text>
               </View>
             </View>
-            <Text
-              className="mt-2 text-[12.5px] font-semibold text-foreground">
-              {e.title}
-            </Text>
-            <Text className="mt-0.5 text-[11px]" style={{ color: '#888' }}>
-              {e.location}
-            </Text>
+            <Text className="mt-2 text-[12.5px] font-semibold text-foreground">{e.title}</Text>
+            <Text className="mt-0.5 text-[11px] text-muted-foreground">{e.location}</Text>
           </Pressable>
         ))}
       </ScrollView>
@@ -619,6 +595,7 @@ function CommunityResults({
   results: CommunityResult[];
   isAllTab: boolean;
 }) {
+  const palette = useBrandColor();
   return (
     <View>
       <View
@@ -628,10 +605,7 @@ function CommunityResults({
           paddingBottom: 12,
         }}>
         <Text className="text-[14px] font-bold text-foreground">
-          커뮤니티{' '}
-          <Text className="text-[14px] font-bold" style={{ color: BRAND.accent }}>
-            {results.length}
-          </Text>
+          커뮤니티 <Text className="text-[14px] font-bold text-brand-accent">{results.length}</Text>
         </Text>
       </View>
       <View
@@ -640,25 +614,23 @@ function CommunityResults({
           paddingBottom: 22,
           gap: 12,
         }}>
-        {results.map(c => (
+        {results.map((c) => (
           <View
             key={c.id}
             style={{
-              backgroundColor: '#FFFFFF',
+              backgroundColor: palette.surface,
               borderRadius: 14,
               padding: 14,
-              shadowColor: BRAND.dark,
+              shadowColor: palette.brand,
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.06,
               shadowRadius: 8,
               elevation: 1,
             }}>
-            <Text
-              className="text-[13px] font-semibold text-foreground"
-              style={{ lineHeight: 18 }}>
+            <Text className="text-[13px] font-semibold text-foreground" style={{ lineHeight: 18 }}>
               {c.title}
             </Text>
-            <Text className="mt-1.5 text-[11px]" style={{ color: '#888' }}>
+            <Text className="mt-1.5 text-[11px] text-muted-foreground">
               댓글 {c.comments} · 좋아요 {c.likes}
             </Text>
           </View>
@@ -675,14 +647,10 @@ function CommunityResults({
             alignItems: 'center',
             padding: 12,
             borderWidth: 1,
-            borderColor: 'rgba(54,81,84,0.15)',
+            borderColor: palette.muted,
             borderRadius: 12,
           }}>
-          <Text
-            className="text-[12.5px] font-bold"
-            style={{ color: BRAND.dark }}>
-            커뮤니티 결과 2개 더보기 ↓
-          </Text>
+          <Text className="text-[12.5px] font-bold text-brand">커뮤니티 결과 2개 더보기 ↓</Text>
         </Pressable>
       ) : null}
     </View>
@@ -690,6 +658,7 @@ function CommunityResults({
 }
 
 function MentorResults({ mentors }: { mentors: MentorResult[] }) {
+  const palette = useBrandColor();
   return (
     <View>
       <View
@@ -699,55 +668,47 @@ function MentorResults({ mentors }: { mentors: MentorResult[] }) {
           paddingBottom: 12,
         }}>
         <Text className="text-[14px] font-bold text-foreground">
-          멘토{' '}
-          <Text className="text-[14px] font-bold" style={{ color: BRAND.accent }}>
-            {mentors.length}
-          </Text>
+          멘토 <Text className="text-[14px] font-bold text-brand-accent">{mentors.length}</Text>
         </Text>
       </View>
       <View style={{ paddingHorizontal: SCREEN_PADDING, paddingBottom: 26 }}>
-        {mentors.map(m => (
+        {mentors.map((m) => (
           <View
             key={m.id}
             style={{
               flexDirection: 'row',
               alignItems: 'center',
               gap: 12,
-              backgroundColor: '#FFFFFF',
+              backgroundColor: palette.surface,
               marginBottom: 22,
               borderRadius: 14,
               padding: 14,
-              shadowColor: BRAND.dark,
+              shadowColor: palette.brand,
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.06,
               shadowRadius: 8,
               elevation: 1,
             }}>
-            <StripePlaceholder
-              label="MENTOR"
-              circle
-              width={44}
-              height={44}
+            <Image
+              source={m.image}
+              accessibilityLabel={m.name}
+              style={{ width: 44, height: 44, borderRadius: 999 }}
             />
             <View style={{ flex: 1 }}>
-              <Text className="text-[13px] font-bold text-foreground">
-                {m.name}
-              </Text>
-              <Text className="mt-0.5 text-[11px]" style={{ color: '#888' }}>
+              <Text className="text-[13px] font-bold text-foreground">{m.name}</Text>
+              <Text className="mt-0.5 text-[11px] text-muted-foreground">
                 팔로워 {m.followers.toLocaleString()}
               </Text>
             </View>
             <View
               style={{
                 borderWidth: 1,
-                borderColor: 'rgba(54,81,84,0.2)',
+                borderColor: palette.muted,
                 paddingHorizontal: 12,
                 paddingVertical: 6,
                 borderRadius: 999,
               }}>
-              <Text className="text-[11.5px] font-bold" style={{ color: BRAND.dark }}>
-                팔로우
-              </Text>
+              <Text className="text-[11.5px] font-bold text-brand">팔로우</Text>
             </View>
           </View>
         ))}

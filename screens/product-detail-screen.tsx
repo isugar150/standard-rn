@@ -1,7 +1,7 @@
 import { StripePlaceholder } from '@/components/stripe-placeholder';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import { BRAND } from '@/lib/theme';
+import { useBrandColor } from '@/lib/theme';
 import { useRouter } from 'expo-router';
 import {
   ChevronDownIcon,
@@ -139,6 +139,7 @@ const UNIT_PRICE = 129000;
 export default function ProductDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const palette = useBrandColor();
   const scrollRef = React.useRef<ScrollView>(null);
   const sectionPositions = React.useRef<Record<SectionKey, number>>({
     product: 0,
@@ -170,11 +171,10 @@ export default function ProductDetailScreen() {
   const closeSheet = React.useCallback(() => setSheetOpen(false), []);
 
 return (
-    <View style={{ flex: 1, backgroundColor: BRAND.cream }}>
+    <View className="flex-1 bg-brand-cream">
       <SafeAreaView
         edges={['top']}
-        className="flex-1"
-        style={{ backgroundColor: BRAND.cream }}>
+        className="flex-1 bg-brand-cream">
         <Header onBackPress={() => router.back()} />
         <ScrollView
           ref={scrollRef}
@@ -214,9 +214,9 @@ return (
             right: 0,
             bottom: 0,
             paddingBottom: insets.bottom + BOTTOM_CTA_VERTICAL,
-            backgroundColor: '#FFFFFF',
+            backgroundColor: palette.surface,
             borderTopWidth: 1,
-            borderTopColor: 'rgba(54, 81, 84, 0.08)',
+            borderTopColor: palette.subtleStrong,
           }}>
           <BottomCTA
             liked={liked}
@@ -244,6 +244,7 @@ return (
 }
 
 function Header({ onBackPress }: { onBackPress: () => void }) {
+  const palette = useBrandColor();
   return (
     <View
       style={{
@@ -252,27 +253,27 @@ function Header({ onBackPress }: { onBackPress: () => void }) {
         justifyContent: 'space-between',
         paddingHorizontal: SCREEN_PADDING,
         height: HEADER_HEIGHT,
-        backgroundColor: BRAND.cream,
+        backgroundColor: palette.cream,
       }}>
       <Pressable
         hitSlop={10}
         accessibilityRole="button"
         accessibilityLabel="뒤로"
         onPress={onBackPress}>
-        <Icon as={ChevronLeftIcon} size={22} color={BRAND.dark} />
+        <Icon as={ChevronLeftIcon} size={22} color={palette.brand} />
       </Pressable>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
         <Pressable
           hitSlop={10}
           accessibilityRole="button"
           accessibilityLabel="공유">
-          <Icon as={ShareIcon} size={20} color={BRAND.dark} />
+          <Icon as={ShareIcon} size={20} color={palette.brand} />
         </Pressable>
         <Pressable
           hitSlop={10}
           accessibilityRole="button"
           accessibilityLabel="장바구니">
-          <Icon as={ShoppingBagIcon} size={20} color={BRAND.dark} />
+          <Icon as={ShoppingBagIcon} size={20} color={palette.brand} />
         </Pressable>
       </View>
     </View>
@@ -280,6 +281,7 @@ function Header({ onBackPress }: { onBackPress: () => void }) {
 }
 
 function HeroPhoto() {
+  const palette = useBrandColor();
   return (
     <View style={{ position: 'relative' }}>
       <StripePlaceholder label="PRODUCT PHOTO 1:1" width="100%" height={390} square />
@@ -300,7 +302,7 @@ function HeroPhoto() {
               width: 6,
               height: 6,
               borderRadius: 3,
-              backgroundColor: i === 0 ? BRAND.dark : 'rgba(54, 81, 84, 0.25)',
+              backgroundColor: i === 0 ? palette.brand : palette.mutedStrong,
             }}
           />
         ))}
@@ -316,9 +318,10 @@ function ProductInfo({
   liked: boolean;
   onLikePress: () => void;
 }) {
+  const palette = useBrandColor();
   return (
     <View style={{ padding: SCREEN_PADDING, paddingBottom: 16 }}>
-      <Text className="text-[12px] font-semibold" style={{ color: '#999' }}>
+      <Text className="text-[12px] font-semibold text-muted-foreground">
         라라베베
       </Text>
       <Text
@@ -345,7 +348,7 @@ function ProductInfo({
           <Icon
             as={HeartIcon}
             size={20}
-            color={liked ? PROMO_ACCENT : BRAND.dark}
+            color={liked ? PROMO_ACCENT : palette.brand}
             fill={liked ? PROMO_ACCENT : 'transparent'}
             strokeWidth={2}
           />
@@ -358,12 +361,12 @@ function ProductInfo({
           gap: 8,
           marginTop: 14,
         }}>
-        <Text className="text-[20px] font-extrabold" style={{ color: BRAND.dark }}>
+        <Text className="text-[20px] font-extrabold text-brand">
           32%
         </Text>
         <Text
           className="text-[15px]"
-          style={{ color: '#bbb', textDecorationLine: 'line-through' }}>
+          style={{ color: palette.mutedText, textDecorationLine: 'line-through' }}>
           189,000원
         </Text>
       </View>
@@ -376,6 +379,7 @@ function ProductInfo({
 }
 
 function AIReviewSummary() {
+  const palette = useBrandColor();
   return (
     <View
       style={{
@@ -392,8 +396,8 @@ function AIReviewSummary() {
           gap: 6,
           marginBottom: 10,
         }}>
-        <Icon as={SparklesIcon} size={16} color={BRAND.dark} />
-        <Text className="text-[12.5px] font-extrabold" style={{ color: BRAND.dark }}>
+        <Icon as={SparklesIcon} size={16} color={palette.brand} />
+        <Text className="text-[12.5px] font-extrabold text-brand">
           AI 후기 요약
         </Text>
       </View>
@@ -408,12 +412,12 @@ function AIReviewSummary() {
           <View
             key={tag}
             style={{
-              backgroundColor: '#FFFFFF',
+              backgroundColor: palette.surface,
               paddingHorizontal: 10,
               paddingVertical: 5,
               borderRadius: 999,
             }}>
-            <Text className="text-[11px] font-bold" style={{ color: '#1a7a7a' }}>
+            <Text className="text-[11px] font-bold" style={{ color: palette.accentText }}>
               {tag}
             </Text>
           </View>
@@ -428,19 +432,20 @@ function AIReviewSummary() {
 }
 
 function ShippingInfo() {
+  const palette = useBrandColor();
   return (
     <View
       style={{
         marginHorizontal: SCREEN_PADDING,
         marginBottom: 18,
         padding: 14,
-        backgroundColor: 'rgba(54, 81, 84, 0.05)',
+        backgroundColor: palette.subtle,
         borderRadius: 16,
         flexDirection: 'row',
         alignItems: 'center',
         gap: 10,
       }}>
-      <Icon as={TruckIcon} size={18} color={BRAND.dark} />
+      <Icon as={TruckIcon} size={18} color={palette.brand} />
       <Text className="text-[12.5px] text-foreground" style={{ lineHeight: 18 }}>
         <Text className="font-bold">무료배송</Text> · 오늘 주문 시 내일(7/12) 도착 예정
       </Text>
@@ -459,6 +464,7 @@ function ColorSizeSelector({
   totalPriceLabel: string;
   qty: number;
 }) {
+  const palette = useBrandColor();
   const selected = COLORS.find((c) => c.id === selectedColor) ?? COLORS[0];
   return (
     <Pressable
@@ -469,7 +475,7 @@ function ColorSizeSelector({
         marginHorizontal: SCREEN_PADDING,
         marginBottom: 22,
         borderWidth: 1,
-        borderColor: 'rgba(54, 81, 84, 0.14)',
+        borderColor: palette.muted,
         borderRadius: 16,
         padding: 4,
       }}>
@@ -482,12 +488,12 @@ function ColorSizeSelector({
           paddingVertical: 12,
         }}>
         <Text className="text-[13.5px] text-foreground">색상 / 사이즈 선택</Text>
-        <Icon as={ChevronDownIcon} size={16} color="#9aa5a5" />
+        <Icon as={ChevronDownIcon} size={16} color={palette.mutedText} />
       </View>
       <View
         style={{
           borderTopWidth: 1,
-          borderTopColor: 'rgba(54, 81, 84, 0.10)',
+          borderTopColor: palette.subtleStrong,
           paddingHorizontal: 12,
           paddingVertical: 10,
           flexDirection: 'row',
@@ -502,7 +508,7 @@ function ColorSizeSelector({
             129,000원 × {qty}개
           </Text>
         </View>
-        <Text className="text-[13.5px] font-bold" style={{ color: BRAND.dark }}>
+        <Text className="text-[13.5px] font-bold text-brand">
           {totalPriceLabel}
         </Text>
       </View>
@@ -511,6 +517,7 @@ function ColorSizeSelector({
 }
 
 function ReviewsPreviewSection() {
+  const palette = useBrandColor();
   const displayReviews = REVIEWS.slice(0, 3);
   return (
     <View style={{ marginBottom: 24 }}>
@@ -524,11 +531,11 @@ function ReviewsPreviewSection() {
         }}>
         <Text className="text-[15px] font-bold text-foreground">
           리뷰{' '}
-          <Text className="text-[15px] font-bold" style={{ color: BRAND.accent }}>
+          <Text className="text-[15px] font-bold text-brand-accent">
             1,204
           </Text>
         </Text>
-        <Text className="text-[11.5px] font-semibold" style={{ color: BRAND.accent }}>
+        <Text className="text-[11.5px] font-semibold text-brand-accent">
           전체보기
         </Text>
       </View>
@@ -537,20 +544,20 @@ function ReviewsPreviewSection() {
         style={{
           marginHorizontal: SCREEN_PADDING,
           marginBottom: 16,
-          backgroundColor: '#FFFFFF',
+          backgroundColor: palette.surface,
           borderRadius: 16,
           padding: 18,
           flexDirection: 'row',
           gap: 20,
           alignItems: 'center',
-          shadowColor: BRAND.dark,
+          shadowColor: palette.brand,
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.06,
           shadowRadius: 8,
           elevation: 1,
         }}>
         <View style={{ alignItems: 'center' }}>
-          <Text className="text-[32px] font-extrabold" style={{ color: BRAND.dark }}>
+          <Text className="text-[32px] font-extrabold text-brand">
             4.8
           </Text>
           <Text
@@ -572,7 +579,7 @@ function ReviewsPreviewSection() {
                 style={{
                   flex: 1,
                   height: 6,
-                  backgroundColor: 'rgba(54, 81, 84, 0.08)',
+                  backgroundColor: palette.subtleStrong,
                   borderRadius: 3,
                   overflow: 'hidden',
                 }}>
@@ -595,10 +602,10 @@ function ReviewsPreviewSection() {
           <View
             key={review.id}
             style={{
-              backgroundColor: '#FFFFFF',
+              backgroundColor: palette.surface,
               borderRadius: 16,
               padding: 14,
-              shadowColor: BRAND.dark,
+              shadowColor: palette.brand,
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.06,
               shadowRadius: 8,
@@ -646,6 +653,7 @@ function ReviewsPreviewSection() {
 }
 
 function ExperienceCTA({ onPress }: { onPress: () => void }) {
+  const palette = useBrandColor();
   return (
     <Pressable
       onPress={onPress}
@@ -690,7 +698,7 @@ function ExperienceCTA({ onPress }: { onPress: () => void }) {
             서울 강남 · 라라베베 진행
           </Text>
         </View>
-        <Text className="text-[12px] font-bold" style={{ color: BRAND.dark }}>
+        <Text className="text-[12px] font-bold text-brand">
           신청 →
         </Text>
       </View>
@@ -699,6 +707,7 @@ function ExperienceCTA({ onPress }: { onPress: () => void }) {
 }
 
 function RelatedProducts() {
+  const palette = useBrandColor();
   return (
     <View style={{ marginBottom: 28 }}>
       <View
@@ -727,7 +736,7 @@ function RelatedProducts() {
               style={{ lineHeight: 16 }}>
               {product.name}
             </Text>
-            <Text className="mt-0.5 text-[12px] font-bold" style={{ color: BRAND.dark }}>
+            <Text className="mt-0.5 text-[12px] font-bold text-brand">
               {product.price}
             </Text>
           </Pressable>
@@ -744,6 +753,7 @@ function StickyTabs({
   activeTab: SectionKey;
   onSelect: (key: SectionKey) => void;
 }) {
+  const palette = useBrandColor();
   const tabs: { key: SectionKey; label: string }[] = [
     { key: 'product', label: '상품정보' },
     { key: 'review', label: '리뷰' },
@@ -754,9 +764,9 @@ function StickyTabs({
     <View
       style={{
         flexDirection: 'row',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: palette.surface,
         borderBottomWidth: 1,
-        borderBottomColor: 'rgba(54, 81, 84, 0.08)',
+        borderBottomColor: palette.subtleStrong,
       }}>
       {tabs.map((tab) => {
         const active = activeTab === tab.key;
@@ -771,11 +781,11 @@ function StickyTabs({
               alignItems: 'center',
               paddingVertical: 12,
               borderBottomWidth: 2,
-              borderBottomColor: active ? BRAND.dark : 'transparent',
+              borderBottomColor: active ? palette.brand : 'transparent',
             }}>
             <Text
               className="text-[13px] font-bold"
-              style={{ color: active ? BRAND.dark : '#9aa5a5' }}>
+              style={{ color: active ? palette.brand : palette.mutedText }}>
               {tab.label}
             </Text>
           </Pressable>
@@ -813,6 +823,7 @@ function ProductDetailSection() {
 }
 
 function QnASection() {
+  const palette = useBrandColor();
   return (
     <View style={{ marginBottom: 24 }}>
       <View
@@ -825,11 +836,11 @@ function QnASection() {
         }}>
         <Text className="text-[15px] font-bold text-foreground">
           Q&amp;A{' '}
-          <Text className="text-[15px] font-bold" style={{ color: BRAND.accent }}>
+          <Text className="text-[15px] font-bold text-brand-accent">
             32
           </Text>
         </Text>
-        <Text className="text-[11.5px] font-semibold" style={{ color: BRAND.accent }}>
+        <Text className="text-[11.5px] font-semibold text-brand-accent">
           문의하기
         </Text>
       </View>
@@ -838,10 +849,10 @@ function QnASection() {
           <View
             key={qna.id}
             style={{
-              backgroundColor: '#FFFFFF',
+              backgroundColor: palette.surface,
               borderRadius: 16,
               padding: 14,
-              shadowColor: BRAND.dark,
+              shadowColor: palette.brand,
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.06,
               shadowRadius: 8,
@@ -849,8 +860,7 @@ function QnASection() {
             }}>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <Text
-                className="text-[12px] font-extrabold"
-                style={{ color: BRAND.accent }}>
+                className="text-[12px] font-extrabold text-brand-accent">
                 Q.
               </Text>
               <Text
@@ -861,8 +871,7 @@ function QnASection() {
             </View>
             <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
               <Text
-                className="text-[12px] font-extrabold"
-                style={{ color: BRAND.dark }}>
+                className="text-[12px] font-extrabold text-brand">
                 A.
               </Text>
               <Text
@@ -879,6 +888,7 @@ function QnASection() {
 }
 
 function SellerInfo() {
+  const palette = useBrandColor();
   return (
     <View style={{ marginBottom: 28 }}>
       <View
@@ -891,10 +901,10 @@ function SellerInfo() {
       <View
         style={{
           marginHorizontal: SCREEN_PADDING,
-          backgroundColor: '#FFFFFF',
+          backgroundColor: palette.surface,
           borderRadius: 16,
           padding: 16,
-          shadowColor: BRAND.dark,
+          shadowColor: palette.brand,
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.06,
           shadowRadius: 8,
@@ -913,12 +923,12 @@ function SellerInfo() {
             accessibilityLabel="문의하기"
             style={{
               borderWidth: 1,
-              borderColor: 'rgba(54, 81, 84, 0.2)',
+              borderColor: palette.muted,
               paddingHorizontal: 12,
               paddingVertical: 8,
               borderRadius: 999,
             }}>
-            <Text className="text-[12px] font-bold" style={{ color: BRAND.dark }}>
+            <Text className="text-[12px] font-bold text-brand">
               문의하기
             </Text>
           </Pressable>
@@ -930,7 +940,7 @@ function SellerInfo() {
             marginTop: 14,
             paddingTop: 14,
             borderTopWidth: 1,
-            borderTopColor: 'rgba(54, 81, 84, 0.08)',
+            borderTopColor: palette.subtleStrong,
           }}>
           {[
             { value: SELLER.responseRate, label: '응답률' },
@@ -961,6 +971,7 @@ function BottomCTA({
   onCartPress: () => void;
   onBuyPress: () => void;
 }) {
+  const palette = useBrandColor();
   return (
     <View
       style={{
@@ -979,14 +990,14 @@ function BottomCTA({
           height: 46,
           borderRadius: 14,
           borderWidth: 1,
-          borderColor: 'rgba(54, 81, 84, 0.15)',
+          borderColor: palette.muted,
           alignItems: 'center',
           justifyContent: 'center',
         }}>
         <Icon
           as={HeartIcon}
           size={20}
-          color={liked ? PROMO_ACCENT : BRAND.dark}
+          color={liked ? PROMO_ACCENT : palette.brand}
           fill={liked ? PROMO_ACCENT : 'transparent'}
           strokeWidth={2}
         />
@@ -997,12 +1008,12 @@ function BottomCTA({
         accessibilityLabel="장바구니"
         style={{
           flex: 1,
-          backgroundColor: 'rgba(54, 81, 84, 0.08)',
+          backgroundColor: palette.subtleStrong,
           paddingVertical: 14,
           borderRadius: 14,
           alignItems: 'center',
         }}>
-        <Text className="text-[14.5px] font-bold" style={{ color: BRAND.dark }}>
+        <Text className="text-[14.5px] font-bold text-brand">
           장바구니
         </Text>
       </Pressable>
@@ -1012,7 +1023,7 @@ function BottomCTA({
         accessibilityLabel="바로 구매"
         style={{
           flex: 1,
-          backgroundColor: BRAND.dark,
+          backgroundColor: palette.brand,
           paddingVertical: 14,
           borderRadius: 14,
           alignItems: 'center',
@@ -1046,6 +1057,7 @@ function OptionSheet({
   onCart: () => void;
   onBuy: () => void;
 }) {
+  const palette = useBrandColor();
   if (!open) return null;
   return (
     <View
@@ -1063,7 +1075,7 @@ function OptionSheet({
       />
       <View
         style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: palette.surface,
           borderTopLeftRadius: 24,
           borderTopRightRadius: 24,
           padding: 18,
@@ -1078,7 +1090,7 @@ function OptionSheet({
           style={{
             width: 36,
             height: 4,
-            backgroundColor: 'rgba(54, 81, 84, 0.2)',
+            backgroundColor: palette.muted,
             borderRadius: 2,
             alignSelf: 'center',
             marginBottom: 16,
@@ -1091,7 +1103,7 @@ function OptionSheet({
             alignItems: 'center',
             paddingBottom: 16,
             borderBottomWidth: 1,
-            borderBottomColor: 'rgba(54, 81, 84, 0.10)',
+            borderBottomColor: palette.subtleStrong,
           }}>
           <StripePlaceholder label="PRODUCT" width={56} height={56} />
           <View style={{ flex: 1 }}>
@@ -1105,7 +1117,7 @@ function OptionSheet({
             accessibilityRole="button"
             accessibilityLabel="닫기"
             onPress={onClose}>
-            <Icon as={XIcon} size={20} color={BRAND.dark} />
+            <Icon as={XIcon} size={20} color={palette.brand} />
           </Pressable>
         </View>
 
@@ -1123,11 +1135,11 @@ function OptionSheet({
                   paddingHorizontal: 14,
                   paddingVertical: 9,
                   borderRadius: 10,
-                  backgroundColor: selected ? BRAND.dark : 'rgba(54, 81, 84, 0.06)',
+                  backgroundColor: selected ? palette.brand : palette.subtle,
                 }}>
                 <Text
                   className="text-[12.5px] font-semibold"
-                  style={{ color: selected ? '#FFFFFF' : BRAND.dark }}>
+                  style={{ color: selected ? palette.onBrand : palette.brand }}>
                   {color.label}
                 </Text>
               </Pressable>
@@ -1152,11 +1164,11 @@ function OptionSheet({
                 width: 30,
                 height: 30,
                 borderRadius: 9,
-                backgroundColor: 'rgba(54, 81, 84, 0.08)',
+                backgroundColor: palette.subtleStrong,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
-              <Icon as={MinusIcon} size={16} color={BRAND.dark} />
+              <Icon as={MinusIcon} size={16} color={palette.brand} />
             </Pressable>
             <Text className="text-[14px] font-bold text-foreground">{qty}</Text>
             <Pressable
@@ -1167,11 +1179,11 @@ function OptionSheet({
                 width: 30,
                 height: 30,
                 borderRadius: 9,
-                backgroundColor: 'rgba(54, 81, 84, 0.08)',
+                backgroundColor: palette.subtleStrong,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
-              <Icon as={PlusIcon} size={16} color={BRAND.dark} />
+              <Icon as={PlusIcon} size={16} color={palette.brand} />
             </Pressable>
           </View>
         </View>
@@ -1185,10 +1197,10 @@ function OptionSheet({
             paddingBottom: 18,
             marginTop: 14,
             borderTopWidth: 1,
-            borderTopColor: 'rgba(54, 81, 84, 0.10)',
+            borderTopColor: palette.subtleStrong,
           }}>
           <Text className="text-[13px] text-muted-foreground">총 결제금액</Text>
-          <Text className="text-[18px] font-extrabold" style={{ color: BRAND.dark }}>
+          <Text className="text-[18px] font-extrabold text-brand">
             {totalPriceLabel}
           </Text>
         </View>
@@ -1200,12 +1212,12 @@ function OptionSheet({
             accessibilityLabel="장바구니 담기"
             style={{
               flex: 1,
-              backgroundColor: 'rgba(54, 81, 84, 0.08)',
+              backgroundColor: palette.subtleStrong,
               paddingVertical: 14,
               borderRadius: 14,
               alignItems: 'center',
             }}>
-            <Text className="text-[14.5px] font-bold" style={{ color: BRAND.dark }}>
+            <Text className="text-[14.5px] font-bold text-brand">
               장바구니 담기
             </Text>
           </Pressable>
@@ -1215,7 +1227,7 @@ function OptionSheet({
             accessibilityLabel="결제하기"
             style={{
               flex: 1,
-              backgroundColor: BRAND.dark,
+              backgroundColor: palette.brand,
               paddingVertical: 14,
               borderRadius: 14,
               alignItems: 'center',

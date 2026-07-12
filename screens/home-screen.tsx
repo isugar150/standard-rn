@@ -1,14 +1,14 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import { HeartButton } from '@/components/ui/heart-button';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { FLOATING_TAB_BAR_CLEARANCE } from '@/components/floating-tab-bar/constants';
-import { StripePlaceholder } from '@/components/stripe-placeholder';
-import { BRAND } from '@/lib/theme';
+import { useBrandColor } from '@/lib/theme';
 import { cn } from '@/lib/utils';
 import { Link } from 'expo-router';
 import { BellIcon, ChevronRightIcon, SearchIcon } from 'lucide-react-native';
 import * as React from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Image, type ImageSourcePropType, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Carousel from 'react-native-reanimated-carousel';
 
@@ -18,11 +18,18 @@ type Baby = {
   dday: number;
   weight: string;
   height: string;
+  image: ImageSourcePropType;
 };
 
 type Tag = { id: string; label: string; selected?: boolean };
 
-type ContentItem = { id: string; title: string; author: string; likes: number };
+type ContentItem = {
+  id: string;
+  title: string;
+  author: string;
+  likes: number;
+  image: ImageSourcePropType;
+};
 
 type Product = {
   id: string;
@@ -30,6 +37,8 @@ type Product = {
   name: string;
   discount: string;
   price: string;
+  image: ImageSourcePropType;
+  liked?: boolean;
 };
 
 type Experience = {
@@ -38,15 +47,30 @@ type Experience = {
   location: string;
   brand: string;
   badge: '예약가능' | '마감임박';
+  image: ImageSourcePropType;
 };
 
-type Mentor = { id: string; name: string };
+type Mentor = { id: string; name: string; image: ImageSourcePropType };
 
 type Post = { id: string; title: string; comments: number; likes: number };
 
 const BABIES: Baby[] = [
-  { id: '1', name: '이준이', dday: 186, weight: '7.8kg', height: '68cm' },
-  { id: '2', name: '하은이', dday: 920, weight: '13.2kg', height: '92cm' },
+  {
+    id: '1',
+    name: '이준이',
+    dday: 186,
+    weight: '7.8kg',
+    height: '68cm',
+    image: require('@/assets/images/home/baby-leejun.png'),
+  },
+  {
+    id: '2',
+    name: '하은이',
+    dday: 920,
+    weight: '13.2kg',
+    height: '92cm',
+    image: require('@/assets/images/home/baby-haeun.png'),
+  },
 ];
 
 const TAGS: Tag[] = [
@@ -58,15 +82,54 @@ const TAGS: Tag[] = [
 ];
 
 const CONTENTS: ContentItem[] = [
-  { id: '1', title: '밤중수유 루틴, 이렇게 편해졌어요', author: 'say_mom', likes: 342 },
-  { id: '2', title: '6개월 이유식 초기 세팅 리스트', author: 'little_table', likes: 218 },
-  { id: '3', title: '카시트 안전 체크리스트', author: 'safe_drive', likes: 187 },
+  {
+    id: '1',
+    title: '밤중수유 루틴, 이렇게 편해졌어요',
+    author: 'say_mom',
+    likes: 342,
+    image: require('@/assets/images/home/content-night-feeding.png'),
+  },
+  {
+    id: '2',
+    title: '6개월 이유식 초기 세팅 리스트',
+    author: 'little_table',
+    likes: 218,
+    image: require('@/assets/images/home/content-weaning.png'),
+  },
+  {
+    id: '3',
+    title: '카시트 안전 체크리스트',
+    author: 'safe_drive',
+    likes: 187,
+    image: require('@/assets/images/home/content-car-seat.png'),
+  },
 ];
 
 const PRODUCTS: Product[] = [
-  { id: '1', brand: '라라베베', name: '전연령 카시트 세이프 3', discount: '32%', price: '129,000원' },
-  { id: '2', brand: '소보송', name: '유기농 전연령 이유식 세트', discount: '15%', price: '38,900원' },
-  { id: '3', brand: '보노보노', name: '신생아 아기띠 세트', discount: '20%', price: '85,000원' },
+  {
+    id: '1',
+    brand: '라라베베',
+    name: '전연령 카시트 세이프 3',
+    discount: '32%',
+    price: '129,000원',
+    image: require('@/assets/images/home/product-car-seat-v2.png'),
+  },
+  {
+    id: '2',
+    brand: '소보송',
+    name: '유기농 전연령 이유식 세트',
+    discount: '15%',
+    price: '38,900원',
+    image: require('@/assets/images/home/product-weaning-set-v2.png'),
+  },
+  {
+    id: '3',
+    brand: '보노보노',
+    name: '신생아 아기띠 세트',
+    discount: '20%',
+    price: '85,000원',
+    image: require('@/assets/images/home/product-baby-carrier.png'),
+  },
 ];
 
 const EXPERIENCES: Experience[] = [
@@ -76,6 +139,7 @@ const EXPERIENCES: Experience[] = [
     location: '서울 강남',
     brand: '브랜드 라라베베',
     badge: '예약가능',
+    image: require('@/assets/images/home/experience-car-seat.png'),
   },
   {
     id: '2',
@@ -83,14 +147,19 @@ const EXPERIENCES: Experience[] = [
     location: '온라인',
     brand: '브랜드 뽀득',
     badge: '마감임박',
+    image: require('@/assets/images/home/experience-stroller.png'),
   },
 ];
 
 const MENTORS: Mentor[] = [
-  { id: '1', name: '수면코치 지은' },
-  { id: '2', name: '이유식쌤 나라' },
-  { id: '3', name: '육아템리뷰' },
-  { id: '4', name: '소아과 의사' },
+  { id: '1', name: '수면코치 지은', image: require('@/assets/images/home/mentor-sleep-coach.png') },
+  {
+    id: '2',
+    name: '이유식쌤 나라',
+    image: require('@/assets/images/home/mentor-weaning-teacher.png'),
+  },
+  { id: '3', name: '육아템리뷰', image: require('@/assets/images/home/mentor-reviewer.png') },
+  { id: '4', name: '소아과 의사', image: require('@/assets/images/home/mentor-pediatrician.png') },
 ];
 
 const POSTS: Post[] = [
@@ -111,28 +180,17 @@ export default function HomeScreen() {
   const activeBaby = BABIES[activeBabyIndex];
 
   return (
-    <SafeAreaView
-      edges={['top']}
-      className="flex-1"
-      style={{ backgroundColor: BRAND.cream }}>
+    <SafeAreaView edges={['top']} className="flex-1 bg-brand-cream">
       <Header />
       <ScrollView
         contentContainerStyle={{ paddingBottom: FLOATING_TAB_BAR_CLEARANCE }}
         showsVerticalScrollIndicator={false}>
-        <BabyChips
-          babies={BABIES}
-          activeIndex={activeBabyIndex}
-          onSelect={setActiveBabyIndex}
-        />
+        <BabyChips babies={BABIES} activeIndex={activeBabyIndex} onSelect={setActiveBabyIndex} />
         <ActiveBabyCard baby={activeBaby} />
         <TagPills tags={TAGS} />
         <SectionTitle title="지금 뜨는 콘텐츠" className="mb-3 px-5" />
         <ContentCarousel items={CONTENTS} />
-        <SectionTitle
-          title="채원님을 위한 추천 상품"
-          action="더보기"
-          className="mb-3 px-5"
-        />
+        <SectionTitle title="채원님을 위한 추천 상품" action="더보기" className="mb-3 px-5" />
         <ProductCarousel items={PRODUCTS} />
         <SectionTitle title="인기 체험" className="mb-3 px-5" />
         <ExperienceCarousel items={EXPERIENCES} />
@@ -146,25 +204,24 @@ export default function HomeScreen() {
 }
 
 function Header() {
+  const palette = useBrandColor();
   return (
-    <View className="flex-row items-center justify-between pb-3.5 pt-4"
+    <View
+      className="flex-row items-center justify-between pb-3.5 pt-4"
       style={{ paddingHorizontal: SCREEN_PADDING }}>
       <Text
-        className="text-xl font-extrabold tracking-tight"
-        style={{ color: BRAND.dark, letterSpacing: -0.3 }}>
+        className="text-xl font-extrabold tracking-tight text-brand"
+        style={{ letterSpacing: -0.3 }}>
         멘토리
       </Text>
       <View className="flex-row items-center" style={{ gap: 14 }}>
         <Link href="/search-input" asChild>
-          <Pressable
-            hitSlop={10}
-            accessibilityRole="button"
-            accessibilityLabel="검색">
-            <Icon as={SearchIcon} size={22} color={BRAND.dark} />
+          <Pressable hitSlop={10} accessibilityRole="button" accessibilityLabel="검색">
+            <Icon as={SearchIcon} size={22} color={palette.brand} />
           </Pressable>
         </Link>
         <Pressable hitSlop={10} accessibilityRole="button" accessibilityLabel="알림">
-          <Icon as={BellIcon} size={22} color={BRAND.dark} />
+          <Icon as={BellIcon} size={22} color={palette.brand} />
         </Pressable>
       </View>
     </View>
@@ -180,6 +237,7 @@ function BabyChips({
   activeIndex: number;
   onSelect: (index: number) => void;
 }) {
+  const palette = useBrandColor();
   return (
     <ScrollView
       horizontal
@@ -205,19 +263,17 @@ function BabyChips({
               paddingLeft: 7,
               paddingRight: 14,
               paddingVertical: 7,
-              backgroundColor: active ? '#FFFFFF' : 'transparent',
+              backgroundColor: active ? palette.surface : 'transparent',
               borderWidth: 1.5,
-              borderColor: active ? BRAND.dark : BRAND.muted,
+              borderColor: active ? palette.brand : palette.muted,
               borderStyle: active ? 'solid' : 'solid',
             }}>
             <Avatar alt={baby.name} className="size-[30px]">
-              <AvatarFallback>
-                <Text className="text-[10px] font-medium">BABY</Text>
-              </AvatarFallback>
+              <AvatarImage source={baby.image} />
             </Avatar>
             <Text
               className="text-[12.5px] font-bold"
-              style={{ color: active ? BRAND.dark : BRAND.mutedText }}>
+              style={{ color: active ? palette.brand : palette.mutedText }}>
               {baby.name}
             </Text>
           </Pressable>
@@ -232,13 +288,13 @@ function BabyChips({
           paddingHorizontal: 14,
           paddingVertical: 7,
           borderWidth: 1.5,
-          borderColor: BRAND.muted,
+          borderColor: palette.muted,
           borderStyle: 'dashed',
         }}>
-        <Text className="text-base leading-none" style={{ color: BRAND.dark }}>
+        <Text className="text-base leading-none" style={{ color: palette.brand }}>
           +
         </Text>
-        <Text className="text-[12.5px] font-bold" style={{ color: BRAND.dark }}>
+        <Text className="text-[12.5px] font-bold" style={{ color: palette.brand }}>
           아이 추가
         </Text>
       </Pressable>
@@ -247,13 +303,14 @@ function BabyChips({
 }
 
 function ActiveBabyCard({ baby }: { baby: Baby }) {
+  const palette = useBrandColor();
   return (
     <View
       className="rounded-3xl bg-card p-4"
       style={{
         marginHorizontal: SCREEN_PADDING,
         marginBottom: 22,
-        shadowColor: BRAND.dark,
+        shadowColor: palette.brand,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.07,
         shadowRadius: 10,
@@ -261,25 +318,21 @@ function ActiveBabyCard({ baby }: { baby: Baby }) {
       }}>
       <Link href="/baby-detail" asChild>
         <Pressable accessibilityRole="button" accessibilityLabel={`${baby.name} 상세`}>
-        <View className="flex-row items-center" style={{ gap: 12 }}>
-          <Avatar alt={baby.name} className="size-[52px]">
-            <AvatarFallback>
-              <Text className="text-sm font-medium">BABY</Text>
-            </AvatarFallback>
-          </Avatar>
-          <View className="flex-1">
-            <View className="flex-row items-baseline" style={{ gap: 6 }}>
-              <Text className="text-sm font-bold text-foreground">{baby.name}</Text>
-              <Text className="text-sm font-extrabold" style={{ color: BRAND.accent }}>
-                D+{baby.dday}
+          <View className="flex-row items-center" style={{ gap: 12 }}>
+            <Avatar alt={baby.name} className="size-[52px]">
+              <AvatarImage source={baby.image} />
+            </Avatar>
+            <View className="flex-1">
+              <View className="flex-row items-baseline" style={{ gap: 6 }}>
+                <Text className="text-sm font-bold text-foreground">{baby.name}</Text>
+                <Text className="text-sm font-extrabold text-brand-accent">D+{baby.dday}</Text>
+              </View>
+              <Text className="mt-0.5 text-[11.5px] text-muted-foreground">
+                최근 기록 · 몸무게 {baby.weight} · 키 {baby.height}
               </Text>
             </View>
-            <Text className="mt-0.5 text-[11.5px] text-muted-foreground">
-              최근 기록 · 몸무게 {baby.weight} · 키 {baby.height}
-            </Text>
+            <Icon as={ChevronRightIcon} size={18} className="text-muted-foreground" />
           </View>
-          <Icon as={ChevronRightIcon} size={18} className="text-muted-foreground" />
-        </View>
         </Pressable>
       </Link>
       <View className="mt-3 flex-row" style={{ gap: 8 }}>
@@ -289,10 +342,10 @@ function ActiveBabyCard({ baby }: { baby: Baby }) {
           accessibilityRole="button"
           accessibilityLabel="일기 쓰기"
           className="flex-row items-center justify-center rounded-xl py-2"
-          style={{ flex: 1.4, gap: 4, backgroundColor: BRAND.dark }}>
+          style={{ flex: 1.4, gap: 4, backgroundColor: palette.brand }}>
           <Text className="text-[13px]">📝</Text>
           <Text className="text-[11.5px] font-bold text-primary-foreground">일기 쓰기</Text>
-          <Icon as={ChevronRightIcon} size={13} color="#FFFFFF" />
+          <Icon as={ChevronRightIcon} size={13} color={palette.onBrand} />
         </Pressable>
       </View>
     </View>
@@ -300,10 +353,11 @@ function ActiveBabyCard({ baby }: { baby: Baby }) {
 }
 
 function QuickAction({ emoji, label }: { emoji: string; label: string }) {
+  const palette = useBrandColor();
   return (
     <View
       className="flex-1 items-center justify-center rounded-xl py-2"
-      style={{ backgroundColor: BRAND.stripeBg }}>
+      style={{ backgroundColor: palette.stripeBg }}>
       <Text className="text-base">{emoji}</Text>
       <Text className="mt-0.5 text-[10px] text-muted-foreground">{label}</Text>
     </View>
@@ -311,6 +365,7 @@ function QuickAction({ emoji, label }: { emoji: string; label: string }) {
 }
 
 function TagPills({ tags }: { tags: Tag[] }) {
+  const palette = useBrandColor();
   return (
     <ScrollView
       horizontal
@@ -326,10 +381,10 @@ function TagPills({ tags }: { tags: Tag[] }) {
           <View
             key={tag.id}
             className="rounded-full px-3.5 py-1.5"
-            style={{ backgroundColor: selected ? BRAND.dark : BRAND.accentSoft }}>
+            style={{ backgroundColor: selected ? palette.brand : palette.accentSoft }}>
             <Text
               className="text-[12.5px] font-semibold"
-              style={{ color: selected ? '#FFFFFF' : BRAND.accentText }}>
+              style={{ color: selected ? palette.onBrand : palette.accentText }}>
               {tag.label}
             </Text>
           </View>
@@ -353,9 +408,7 @@ function SectionTitle({
       <Text className="text-[15px] font-bold text-foreground">{title}</Text>
       {action ? (
         <Pressable accessibilityRole="button" accessibilityLabel={action}>
-          <Text className="text-[11.5px] font-semibold" style={{ color: BRAND.accent }}>
-            {action}
-          </Text>
+          <Text className="text-[11.5px] font-semibold text-brand-accent">{action}</Text>
         </Pressable>
       ) : null}
     </View>
@@ -372,7 +425,7 @@ function ContentCarousel({ items }: { items: ContentItem[] }) {
           gap: 10,
           paddingHorizontal: SCREEN_PADDING,
         }}>
-        {items.map(item => (
+        {items.map((item) => (
           <ContentCard key={item.id} item={item} />
         ))}
       </ScrollView>
@@ -386,7 +439,11 @@ function ContentCard({ item }: { item: ContentItem }) {
       accessibilityRole="button"
       accessibilityLabel={item.title}
       style={{ width: CONTENT_CARD_WIDTH }}>
-      <StripePlaceholder label="CONTENT THUMB 4:3" aspectRatio={220 / 140} />
+      <Image
+        source={item.image}
+        accessibilityLabel={item.title}
+        style={{ width: CONTENT_CARD_WIDTH, height: CONTENT_CARD_HEIGHT - 60, borderRadius: 16 }}
+      />
       <Text
         className="mt-2.5 text-[13.5px] font-semibold text-foreground"
         style={{ lineHeight: 18 }}
@@ -423,7 +480,14 @@ function ProductCard({ item }: { item: Product }) {
       accessibilityRole="button"
       accessibilityLabel={item.name}
       style={{ width: PRODUCT_CARD_WIDTH }}>
-      <StripePlaceholder label="PRODUCT" square />
+      <View style={{ position: 'relative', width: PRODUCT_CARD_WIDTH, height: PRODUCT_CARD_WIDTH }}>
+        <Image
+          source={item.image}
+          accessibilityLabel={item.name}
+          style={{ width: PRODUCT_CARD_WIDTH, height: PRODUCT_CARD_WIDTH, borderRadius: 16 }}
+        />
+        <HeartButton liked={item.liked} size="sm" />
+      </View>
       <Text className="mt-2 text-[11px] text-muted-foreground">{item.brand}</Text>
       <Text
         className="text-[13px] font-semibold text-foreground"
@@ -432,9 +496,7 @@ function ProductCard({ item }: { item: Product }) {
         {item.name}
       </Text>
       <View className="mt-0.5 flex-row items-baseline" style={{ gap: 5 }}>
-        <Text className="text-[13px] font-extrabold" style={{ color: BRAND.dark }}>
-          {item.discount}
-        </Text>
+        <Text className="text-[13px] font-extrabold text-brand">{item.discount}</Text>
         <Text className="text-[13.5px] font-bold text-foreground">{item.price}</Text>
       </View>
     </Pressable>
@@ -459,6 +521,7 @@ function ExperienceCarousel({ items }: { items: Experience[] }) {
 }
 
 function ExperienceCard({ item }: { item: Experience }) {
+  const palette = useBrandColor();
   const isClosing = item.badge === '마감임박';
   return (
     <Pressable
@@ -466,18 +529,25 @@ function ExperienceCard({ item }: { item: Experience }) {
       accessibilityLabel={item.title}
       style={{ width: EXPERIENCE_CARD_WIDTH }}>
       <View className="relative">
-        <StripePlaceholder
-          label="EXPERIENCE PHOTO"
-          height={EXPERIENCE_IMAGE_HEIGHT}
+        <Image
+          source={item.image}
+          accessibilityLabel={item.title}
+          style={{
+            width: EXPERIENCE_CARD_WIDTH,
+            height: EXPERIENCE_IMAGE_HEIGHT,
+            borderRadius: 16,
+          }}
         />
         <View
           className="absolute left-2 top-2 rounded-full"
           style={{
-            backgroundColor: isClosing ? BRAND.overlay : BRAND.accent,
+            backgroundColor: isClosing ? palette.overlay : palette.accent,
             paddingHorizontal: 8,
             paddingVertical: 4,
           }}>
-          <Text className="text-[10.5px] font-bold text-primary-foreground">{item.badge}</Text>
+          <Text className="text-[10.5px] font-bold" style={{ color: '#FFFFFF' }}>
+            {item.badge}
+          </Text>
         </View>
       </View>
       <Text
@@ -510,10 +580,10 @@ function MentorList({ items }: { items: Mentor[] }) {
           accessibilityLabel={mentor.name}
           className="items-center"
           style={{ width: MENTOR_WIDTH }}>
-          <StripePlaceholder label="MENTOR" circle />
-          <Text
-            className="mt-1.5 text-[11.5px] font-semibold text-foreground"
-            numberOfLines={1}>
+          <Avatar alt={mentor.name} className="size-16">
+            <AvatarImage source={mentor.image} />
+          </Avatar>
+          <Text className="mt-1.5 text-[11.5px] font-semibold text-foreground" numberOfLines={1}>
             {mentor.name}
           </Text>
         </Pressable>
@@ -523,6 +593,7 @@ function MentorList({ items }: { items: Mentor[] }) {
 }
 
 function PostList({ items }: { items: Post[] }) {
+  const palette = useBrandColor();
   return (
     <View className="px-5 pb-6" style={{ gap: 14 }}>
       {items.map((post) => (
@@ -532,7 +603,7 @@ function PostList({ items }: { items: Post[] }) {
           accessibilityLabel={post.title}
           className="rounded-2xl bg-card p-3.5"
           style={{
-            shadowColor: BRAND.dark,
+            shadowColor: palette.brand,
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.06,
             shadowRadius: 8,
@@ -552,4 +623,3 @@ function PostList({ items }: { items: Post[] }) {
     </View>
   );
 }
-

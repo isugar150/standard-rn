@@ -3,10 +3,9 @@ import {
   FLOATING_TAB_BAR_CLEARANCE,
   FLOATING_TAB_BAR_HEIGHT,
 } from '@/components/floating-tab-bar/constants';
-import { StripePlaceholder } from '@/components/stripe-placeholder';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import { BRAND } from '@/lib/theme';
+import { useBrandColor } from '@/lib/theme';
 import { useRouter } from 'expo-router';
 import {
   BookmarkIcon,
@@ -16,7 +15,15 @@ import {
   SearchIcon,
 } from 'lucide-react-native';
 import * as React from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  Image,
+  type ImageSourcePropType,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   Easing,
@@ -41,6 +48,7 @@ type BadgeKind = '멘토' | '사용후기' | '체험후기' | '질문';
 type Post = {
   id: string;
   author: string;
+  avatarImage: ImageSourcePropType;
   time: string;
   category: PostCategory;
   badge?: BadgeKind;
@@ -50,7 +58,8 @@ type Post = {
   content: string;
   hasPhoto?: boolean;
   photoHeight?: number;
-  productTag?: { name: string; emoji: string };
+  image?: ImageSourcePropType;
+  productTag?: { name: string; image: ImageSourcePropType };
   likes: number;
   comments: number;
   isLinkable?: boolean;
@@ -60,6 +69,7 @@ const POSTS: Post[] = [
   {
     id: 'mentor-1',
     author: '수면코치 지은',
+    avatarImage: require('@/assets/images/home/mentor-sleep-coach.png'),
     time: '3시간 전',
     category: '멘토',
     badge: '멘토',
@@ -69,12 +79,14 @@ const POSTS: Post[] = [
     content: '',
     hasPhoto: true,
     photoHeight: 150,
+    image: require('@/assets/images/community/post-sleep-routine.png'),
     likes: 412,
     comments: 58,
   },
   {
     id: 'review-1',
     author: '채원맘',
+    avatarImage: require('@/assets/images/community/avatar-chaewon.png'),
     time: '5시간 전',
     category: '사용후기',
     badge: '사용후기',
@@ -82,7 +94,11 @@ const POSTS: Post[] = [
       '카시트 새거로 바꾼지 한 달 됐는데 진짜 만족스러워요. 설치도 쉽고 아기가 훨씬 편안해 보여요!',
     hasPhoto: true,
     photoHeight: 170,
-    productTag: { name: '전연령 카시트 세이프 3', emoji: 'P' },
+    image: require('@/assets/images/community/post-car-seat-review.png'),
+    productTag: {
+      name: '전연령 카시트 세이프 3',
+      image: require('@/assets/images/home/product-car-seat-v2.png'),
+    },
     likes: 156,
     comments: 48,
     isLinkable: true,
@@ -90,6 +106,7 @@ const POSTS: Post[] = [
   {
     id: 'question-1',
     author: '초보아빠',
+    avatarImage: require('@/assets/images/community/avatar-beginner-dad.png'),
     time: '어제',
     category: '질문',
     badge: '질문',
@@ -101,14 +118,18 @@ const POSTS: Post[] = [
   {
     id: 'experience-1',
     author: '지은맘',
+    avatarImage: require('@/assets/images/community/avatar-jieun.png'),
     time: '어제',
     category: '체험후기',
     badge: '체험후기',
-    content:
-      '뉴본 카시트 3일 체험단 다녀왔어요! 직접 설치까지 해볼 수 있어서 좋았어요.',
+    content: '뉴본 카시트 3일 체험단 다녀왔어요! 직접 설치까지 해볼 수 있어서 좋았어요.',
     hasPhoto: true,
     photoHeight: 170,
-    productTag: { name: '뉴본 카시트 3일 체험단', emoji: 'E' },
+    image: require('@/assets/images/community/post-car-seat-experience.png'),
+    productTag: {
+      name: '뉴본 카시트 3일 체험단',
+      image: require('@/assets/images/home/experience-car-seat.png'),
+    },
     likes: 89,
     comments: 21,
     isLinkable: true,
@@ -116,6 +137,7 @@ const POSTS: Post[] = [
   {
     id: 'recommendation-1',
     author: '나라쌘',
+    avatarImage: require('@/assets/images/community/avatar-nara.png'),
     time: '2일 전',
     category: '멘토',
     title: '이유식 초기, 진짜 이렇게까지 해야하나요? (경험담)',
@@ -124,20 +146,6 @@ const POSTS: Post[] = [
     comments: 31,
   },
 ];
-
-const BADGE_BG: Record<BadgeKind, string> = {
-  멘토: '#21C7C7',
-  사용후기: 'rgba(33,199,199,0.16)',
-  체험후기: 'rgba(33,199,199,0.16)',
-  질문: 'rgba(54,81,84,0.08)',
-};
-
-const BADGE_TEXT: Record<BadgeKind, string> = {
-  멘토: '#FFFFFF',
-  사용후기: '#1a7a7a',
-  체험후기: '#1a7a7a',
-  질문: '#365154',
-};
 
 const BADGE_LABEL: Record<BadgeKind, string> = {
   멘토: '멘토',
@@ -149,12 +157,13 @@ const BADGE_LABEL: Record<BadgeKind, string> = {
 export default function CommunityScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const palette = useBrandColor();
   const [activeCategory, setActiveCategory] = React.useState<CategoryKey>('전체');
   const [sheetOpen, setSheetOpen] = React.useState(false);
 
   const visiblePosts = React.useMemo(() => {
     if (activeCategory === '전체') return POSTS;
-    return POSTS.filter(p => p.category === activeCategory);
+    return POSTS.filter((p) => p.category === activeCategory);
   }, [activeCategory]);
 
   const fabBottom =
@@ -165,17 +174,14 @@ export default function CommunityScreen() {
     (Platform.OS === 'android' ? 20 : -60);
 
   return (
-    <SafeAreaView
-      edges={['top']}
-      className="flex-1"
-      style={{ backgroundColor: BRAND.cream }}>
+    <SafeAreaView edges={['top']} className="flex-1 bg-brand-cream">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: FLOATING_TAB_BAR_CLEARANCE + FAB_SIZE + 24 }}>
         <Header
-        onSearchPress={() => router.push('/search-input' as never)}
-        onSavedPress={() => router.push('/profile' as never)}
-      />
+          onSearchPress={() => router.push('/search-input' as never)}
+          onSavedPress={() => router.push('/profile' as never)}
+        />
         <CategoryFilter active={activeCategory} onSelect={setActiveCategory} />
 
         <View
@@ -185,7 +191,7 @@ export default function CommunityScreen() {
             paddingBottom: 8,
             gap: 14,
           }}>
-          {visiblePosts.map(post => (
+          {visiblePosts.map((post) => (
             <PostCard
               key={post.id}
               post={post}
@@ -210,8 +216,8 @@ export default function CommunityScreen() {
           width: FAB_SIZE,
           height: FAB_SIZE,
           borderRadius: FAB_SIZE / 2,
-          backgroundColor: BRAND.dark,
-          shadowColor: BRAND.dark,
+          backgroundColor: palette.brand,
+          shadowColor: palette.brand,
           shadowOffset: { width: 0, height: 8 },
           shadowOpacity: 0.35,
           shadowRadius: 20,
@@ -219,7 +225,7 @@ export default function CommunityScreen() {
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-        <Icon as={PlusIcon} size={22} color="#FFFFFF" strokeWidth={2.2} />
+        <Icon as={PlusIcon} size={22} color={palette.onBrand} strokeWidth={2.2} />
       </Pressable>
 
       <WriteSheet open={sheetOpen} onClose={() => setSheetOpen(false)} />
@@ -234,6 +240,7 @@ function Header({
   onSearchPress: () => void;
   onSavedPress: () => void;
 }) {
+  const palette = useBrandColor();
   return (
     <View
       style={{
@@ -248,9 +255,7 @@ function Header({
           justifyContent: 'space-between',
           marginBottom: 14,
         }}>
-        <Text
-          className="text-xl font-extrabold"
-          style={{ color: BRAND.dark, letterSpacing: -0.3 }}>
+        <Text className="text-xl font-extrabold text-brand" style={{ letterSpacing: -0.3 }}>
           커뮤니티
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
@@ -259,14 +264,14 @@ function Header({
             accessibilityRole="button"
             accessibilityLabel="검색"
             onPress={onSearchPress}>
-            <Icon as={SearchIcon} size={22} color={BRAND.dark} />
+            <Icon as={SearchIcon} size={22} color={palette.brand} />
           </Pressable>
           <Pressable
             hitSlop={10}
             accessibilityRole="button"
             accessibilityLabel="저장된 항목"
             onPress={onSavedPress}>
-            <Icon as={BookmarkIcon} size={22} color={BRAND.dark} />
+            <Icon as={BookmarkIcon} size={22} color={palette.brand} />
           </Pressable>
         </View>
       </View>
@@ -281,6 +286,7 @@ function CategoryFilter({
   active: CategoryKey;
   onSelect: (key: CategoryKey) => void;
 }) {
+  const palette = useBrandColor();
   return (
     <ScrollView
       horizontal
@@ -290,7 +296,7 @@ function CategoryFilter({
         paddingHorizontal: SCREEN_PADDING,
         paddingBottom: 4,
       }}>
-      {CATEGORY_KEYS.map(key => {
+      {CATEGORY_KEYS.map((key) => {
         const isActive = key === active;
         return (
           <Pressable
@@ -302,11 +308,11 @@ function CategoryFilter({
               paddingHorizontal: 14,
               paddingVertical: 8,
               borderRadius: 999,
-              backgroundColor: isActive ? BRAND.dark : 'rgba(54,81,84,0.06)',
+              backgroundColor: isActive ? palette.brand : palette.subtle,
             }}>
             <Text
               className="text-[12.5px] font-bold"
-              style={{ color: isActive ? '#FFFFFF' : BRAND.dark }}>
+              style={{ color: isActive ? palette.onBrand : palette.brand }}>
               {key}
             </Text>
           </Pressable>
@@ -317,14 +323,27 @@ function CategoryFilter({
 }
 
 function PostCard({ post, onPress }: { post: Post; onPress: () => void }) {
+  const palette = useBrandColor();
+  const BADGE_BG: Record<BadgeKind, string> = {
+    멘토: '#21C7C7',
+    사용후기: palette.accentSoft,
+    체험후기: palette.accentSoft,
+    질문: palette.subtleStrong,
+  };
+  const BADGE_TEXT: Record<BadgeKind, string> = {
+    멘토: '#FFFFFF',
+    사용후기: palette.accentText,
+    체험후기: palette.accentText,
+    질문: palette.brand,
+  };
   const isHighlighted = !!post.isHighlighted;
   const containerStyle = isHighlighted
     ? {
         backgroundColor: 'rgba(33,199,199,0.14)',
       }
     : {
-        backgroundColor: '#FFFFFF',
-        shadowColor: BRAND.dark,
+        backgroundColor: palette.surface,
+        shadowColor: palette.brand,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.06,
         shadowRadius: 8,
@@ -342,17 +361,20 @@ function PostCard({ post, onPress }: { post: Post; onPress: () => void }) {
         ...containerStyle,
       }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-        <StripePlaceholder
-          label={isHighlighted ? 'MENTOR' : 'USER'}
-          circle
-          width={isHighlighted ? 40 : 36}
-          height={isHighlighted ? 40 : 36}
+        <Image
+          source={post.avatarImage}
+          accessibilityLabel={post.author}
+          style={{
+            width: isHighlighted ? 40 : 36,
+            height: isHighlighted ? 40 : 36,
+            borderRadius: 999,
+          }}
         />
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <Text
               className={isHighlighted ? 'text-[12.5px] font-bold' : 'text-[12.5px] font-bold'}
-              style={{ color: '#2a2a2a' }}>
+              style={{ color: palette.mutedText }}>
               {post.author}
             </Text>
             {post.badge ? (
@@ -364,17 +386,13 @@ function PostCard({ post, onPress }: { post: Post; onPress: () => void }) {
                   borderRadius: 6,
                   marginLeft: 4,
                 }}>
-                <Text
-                  className="text-[9.5px] font-bold"
-                  style={{ color: BADGE_TEXT[post.badge] }}>
+                <Text className="text-[9.5px] font-bold" style={{ color: BADGE_TEXT[post.badge] }}>
                   {BADGE_LABEL[post.badge]}
                 </Text>
               </View>
             ) : null}
           </View>
-          <Text className="mt-0.5 text-[11px]" style={{ color: '#666' }}>
-            {post.time}
-          </Text>
+          <Text className="mt-0.5 text-[11px] text-muted-foreground">{post.time}</Text>
         </View>
         {post.showFollowButton ? (
           <Pressable
@@ -382,22 +400,22 @@ function PostCard({ post, onPress }: { post: Post; onPress: () => void }) {
             accessibilityLabel="팔로우"
             style={{
               borderWidth: 1,
-              borderColor: 'rgba(54,81,84,0.25)',
+              borderColor: palette.mutedStrong,
               paddingHorizontal: 12,
               paddingVertical: 6,
               borderRadius: 999,
             }}>
-            <Text className="text-[11.5px] font-bold" style={{ color: BRAND.dark }}>
-              팔로우
-            </Text>
+            <Text className="text-[11.5px] font-bold text-brand">팔로우</Text>
           </Pressable>
         ) : null}
       </View>
 
       {post.title ? (
         <Text
-          className={post.content ? 'mt-3 text-[13.5px] font-semibold' : 'mt-3 text-[13.5px] font-semibold'}
-          style={{ color: '#2a2a2a', lineHeight: 19 }}>
+          className={
+            post.content ? 'mt-3 text-[13.5px] font-semibold' : 'mt-3 text-[13.5px] font-semibold'
+          }
+          style={{ color: palette.mutedText, lineHeight: 19 }}>
           {post.title}
         </Text>
       ) : null}
@@ -405,17 +423,18 @@ function PostCard({ post, onPress }: { post: Post; onPress: () => void }) {
       {post.content ? (
         <Text
           className={post.title ? 'mt-1.5 text-[13px]' : 'mt-3 text-[13px]'}
-          style={{ color: '#2a2a2a', lineHeight: 19 }}>
+          style={{ color: palette.mutedText, lineHeight: 19 }}>
           {post.content}
         </Text>
       ) : null}
 
-      {post.hasPhoto ? (
+      {post.hasPhoto && post.image ? (
         <View style={{ marginTop: 10 }}>
-          <StripePlaceholder
-            label={isHighlighted ? 'CONTENT PHOTO' : post.productTag ? '후기 사진' : '체험 사진'}
-            width="100%"
-            height={post.photoHeight ?? 170}
+          <Image
+            source={post.image}
+            accessibilityLabel={post.title ?? `${post.author}의 ${post.category} 사진`}
+            style={{ width: '100%', height: post.photoHeight ?? 170, borderRadius: 16 }}
+            resizeMode="cover"
           />
         </View>
       ) : null}
@@ -428,16 +447,18 @@ function PostCard({ post, onPress }: { post: Post; onPress: () => void }) {
               alignItems: 'center',
               gap: 5,
               alignSelf: 'flex-start',
-              backgroundColor: 'rgba(54,81,84,0.06)',
+              backgroundColor: palette.subtle,
               paddingHorizontal: 10,
               paddingVertical: 6,
               borderRadius: 10,
             }}>
-            <StripePlaceholder label={post.productTag.emoji} width={20} height={20} />
-            <Text className="text-[11.5px] font-semibold" style={{ color: BRAND.dark }}>
-              {post.productTag.name}
-            </Text>
-            <Icon as={ChevronRightIcon} size={12} color={BRAND.dark} />
+            <Image
+              source={post.productTag.image}
+              accessibilityLabel={post.productTag.name}
+              style={{ width: 20, height: 20, borderRadius: 6 }}
+            />
+            <Text className="text-[11.5px] font-semibold text-brand">{post.productTag.name}</Text>
+            <Icon as={ChevronRightIcon} size={12} color={palette.brand} />
           </View>
         </View>
       ) : null}
@@ -448,12 +469,8 @@ function PostCard({ post, onPress }: { post: Post; onPress: () => void }) {
           gap: 14,
           marginTop: 12,
         }}>
-        <Text className="text-[11.5px]" style={{ color: '#888' }}>
-          ❤️ {post.likes}
-        </Text>
-        <Text className="text-[11.5px]" style={{ color: '#888' }}>
-          💬 {post.comments}
-        </Text>
+        <Text className="text-[11.5px] text-muted-foreground">❤️ {post.likes}</Text>
+        <Text className="text-[11.5px] text-muted-foreground">💬 {post.comments}</Text>
       </View>
     </Pressable>
   );
@@ -495,6 +512,7 @@ const WRITE_OPTIONS: WriteOption[] = [
 
 function WriteSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const insets = useSafeAreaInsets();
+  const palette = useBrandColor();
   const progress = useSharedValue(0);
   const dragY = useSharedValue(0);
 
@@ -505,7 +523,7 @@ function WriteSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
         duration: 300,
         easing: Easing.out(Easing.cubic),
       },
-      finished => {
+      (finished) => {
         'worklet';
         if (finished && !open) {
           dragY.value = 0;
@@ -515,11 +533,11 @@ function WriteSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   }, [open, progress, dragY]);
 
   const panGesture = Gesture.Pan()
-    .onUpdate(event => {
+    .onUpdate((event) => {
       'worklet';
       dragY.value = Math.max(0, event.translationY);
     })
-    .onEnd(event => {
+    .onEnd((event) => {
       'worklet';
       const shouldClose = dragY.value > 100 || event.velocityY > 500;
       if (shouldClose) {
@@ -534,9 +552,7 @@ function WriteSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   }));
 
   const sheetStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateY: (1 - progress.value) * SHEET_HEIGHT + dragY.value },
-    ],
+    transform: [{ translateY: (1 - progress.value) * SHEET_HEIGHT + dragY.value }],
   }));
 
   return (
@@ -562,17 +578,14 @@ function WriteSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
           style={[
             sheetStyle,
             {
-              backgroundColor: '#FFFFFF',
+              backgroundColor: palette.surface,
               borderTopLeftRadius: 24,
               borderTopRightRadius: 24,
               paddingHorizontal: SCREEN_PADDING,
               paddingTop: 18,
               paddingBottom:
                 Platform.OS === 'android'
-                  ? insets.bottom +
-                    FLOATING_TAB_BAR_HEIGHT +
-                    FLOATING_TAB_BAR_BOTTOM_MARGIN +
-                    24
+                  ? insets.bottom + FLOATING_TAB_BAR_HEIGHT + FLOATING_TAB_BAR_BOTTOM_MARGIN + 24
                   : insets.bottom + 20,
               shadowColor: '#000',
               shadowOffset: { width: 0, height: -10 },
@@ -580,61 +593,61 @@ function WriteSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
               shadowRadius: 30,
               elevation: 20,
             },
-        ]}>
-        <View
-          style={{
-            width: 36,
-            height: 4,
-            backgroundColor: 'rgba(54,81,84,0.2)',
-            borderRadius: 2,
-            alignSelf: 'center',
-            marginBottom: 18,
-          }}
-        />
-        <Text className="text-[15px] font-bold mb-4" style={{ color: '#2a2a2a' }}>
-          어떤 글을 쓸까요?
-        </Text>
-        <View style={{ gap: 10 }}>
-          {WRITE_OPTIONS.map(option => {
-            const bg = option.bgClass === 'teal' ? 'rgba(33,199,199,0.10)' : 'rgba(54,81,84,0.05)';
-            const iconBg = option.bgClass === 'teal' ? '#21C7C7' : BRAND.dark;
-            return (
-              <Pressable
-                key={option.title}
-                accessibilityRole="button"
-                accessibilityLabel={option.title}
-                onPress={onClose}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 12,
-                  padding: 14,
-                  borderRadius: 14,
-                  backgroundColor: bg,
-                }}>
-                <View
+          ]}>
+          <View
+            style={{
+              width: 36,
+              height: 4,
+              backgroundColor: palette.muted,
+              borderRadius: 2,
+              alignSelf: 'center',
+              marginBottom: 18,
+            }}
+          />
+          <Text className="mb-4 text-[15px] font-bold" style={{ color: palette.mutedText }}>
+            어떤 글을 쓸까요?
+          </Text>
+          <View style={{ gap: 10 }}>
+            {WRITE_OPTIONS.map((option) => {
+              const bg = option.bgClass === 'teal' ? 'rgba(33,199,199,0.10)' : palette.subtle;
+              const iconBg = option.bgClass === 'teal' ? '#21C7C7' : palette.brand;
+              return (
+                <Pressable
+                  key={option.title}
+                  accessibilityRole="button"
+                  accessibilityLabel={option.title}
+                  onPress={onClose}
                   style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 12,
-                    backgroundColor: iconBg,
+                    flexDirection: 'row',
                     alignItems: 'center',
-                    justifyContent: 'center',
+                    gap: 12,
+                    padding: 14,
+                    borderRadius: 14,
+                    backgroundColor: bg,
                   }}>
-                  <Text style={{ fontSize: 18 }}>{option.emoji}</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text className="text-[13.5px] font-bold" style={{ color: '#2a2a2a' }}>
-                    {option.title}
-                  </Text>
-                  <Text className="mt-0.5 text-[11.5px]" style={{ color: '#888' }}>
-                    {option.description}
-                  </Text>
-                </View>
-              </Pressable>
-            );
-          })}
-        </View>
+                  <View
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 12,
+                      backgroundColor: iconBg,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                    <Text style={{ fontSize: 18 }}>{option.emoji}</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text className="text-[13.5px] font-bold" style={{ color: palette.mutedText }}>
+                      {option.title}
+                    </Text>
+                    <Text className="mt-0.5 text-[11.5px] text-muted-foreground">
+                      {option.description}
+                    </Text>
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
         </Animated.View>
       </GestureDetector>
     </Animated.View>

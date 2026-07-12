@@ -1,6 +1,6 @@
 import { StripePlaceholder } from '@/components/stripe-placeholder';
 import { Text } from '@/components/ui/text';
-import { BRAND } from '@/lib/theme';
+import { useBrandColor } from '@/lib/theme';
 import { useRouter } from 'expo-router';
 import { ChevronLeftIcon } from 'lucide-react-native';
 import * as React from 'react';
@@ -53,8 +53,7 @@ export default function BabyDetailScreen() {
   return (
     <SafeAreaView
       edges={['top']}
-      className="flex-1"
-      style={{ backgroundColor: BRAND.cream }}>
+      className="flex-1 bg-brand-cream">
       <Header onBack={() => router.back()} />
       <ScrollView
         contentContainerStyle={{
@@ -76,6 +75,7 @@ export default function BabyDetailScreen() {
 }
 
 function Header({ onBack }: { onBack: () => void }) {
+  const palette = useBrandColor();
   return (
     <View
       className="flex-row items-center justify-between"
@@ -86,11 +86,11 @@ function Header({ onBack }: { onBack: () => void }) {
         accessibilityLabel="뒤로 가기"
         onPress={onBack}
         className="-ml-1 p-1">
-        <Icon name="chevron-left" color={BRAND.dark} size={22} />
+        <Icon name="chevron-left" color={palette.brand} size={22} />
       </Pressable>
       <Text className="text-[15px] font-bold text-foreground">아기 정보</Text>
       <Pressable hitSlop={10} accessibilityRole="button" accessibilityLabel="정보 수정">
-        <Text className="text-[12.5px] font-bold" style={{ color: BRAND.accent }}>
+        <Text className="text-[12.5px] font-bold text-brand-accent">
           정보 수정
         </Text>
       </Pressable>
@@ -139,6 +139,7 @@ function ActionChip({
   label: string;
   primary?: boolean;
 }) {
+  const palette = useBrandColor();
   return (
     <View
       className="flex-row items-center rounded-full"
@@ -146,12 +147,12 @@ function ActionChip({
         gap: 6,
         paddingHorizontal: 14,
         paddingVertical: 8,
-        backgroundColor: primary ? BRAND.dark : 'rgba(54, 81, 84, 0.08)',
+        backgroundColor: primary ? palette.brand : palette.subtleStrong,
       }}>
       <Text className="text-[12.5px]">{emoji}</Text>
       <Text
         className="text-[12.5px] font-bold"
-        style={{ color: primary ? '#FFFFFF' : BRAND.dark }}>
+        style={{ color: primary ? palette.onBrand : palette.brand }}>
         {label}
       </Text>
     </View>
@@ -171,12 +172,13 @@ function StatsRow({ items }: { items: Stat[] }) {
 }
 
 function StatCard({ stat }: { stat: Stat }) {
+  const palette = useBrandColor();
   return (
     <View
       className="flex-1 items-center rounded-2xl bg-card"
       style={{
         paddingVertical: 12,
-        shadowColor: BRAND.dark,
+        shadowColor: palette.brand,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.06,
         shadowRadius: 8,
@@ -195,7 +197,7 @@ function SectionHeader({ title, action }: { title: string; action: string }) {
       style={{ paddingHorizontal: SCREEN_PADDING, marginBottom: 12 }}>
       <Text className="text-[15px] font-bold text-foreground">{title}</Text>
       <Pressable accessibilityRole="button" accessibilityLabel={action}>
-        <Text className="text-[11.5px] font-semibold" style={{ color: BRAND.accent }}>
+        <Text className="text-[11.5px] font-semibold text-brand-accent">
           {action}
         </Text>
       </Pressable>
@@ -210,6 +212,7 @@ function GrowthChartCard({
   activeTab: GrowthTab;
   onTabChange: (tab: GrowthTab) => void;
 }) {
+  const palette = useBrandColor();
   return (
     <View
       className="bg-card"
@@ -218,7 +221,7 @@ function GrowthChartCard({
         marginBottom: 26,
         borderRadius: 18,
         padding: 16,
-        shadowColor: BRAND.dark,
+        shadowColor: palette.brand,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.06,
         shadowRadius: 8,
@@ -234,6 +237,7 @@ function GrowthChartCard({
 }
 
 function GrowthTab({ active, label, onPress }: { active: boolean; label: string; onPress: () => void }) {
+  const palette = useBrandColor();
   return (
     <Pressable
       accessibilityRole="button"
@@ -244,11 +248,11 @@ function GrowthTab({ active, label, onPress }: { active: boolean; label: string;
       style={{
         paddingHorizontal: 12,
         paddingVertical: 6,
-        backgroundColor: active ? BRAND.dark : BRAND.stripeBg,
+        backgroundColor: active ? palette.brand : palette.stripeBg,
       }}>
       <Text
         className="text-[11.5px] font-bold"
-        style={{ color: active ? '#FFFFFF' : BRAND.dark }}>
+        style={{ color: active ? palette.onBrand : palette.brand }}>
         {label}
       </Text>
     </Pressable>
@@ -266,6 +270,7 @@ function TodayRecordsList({ items }: { items: RecordItem[] }) {
 }
 
 function RecordCard({ item }: { item: RecordItem }) {
+  const palette = useBrandColor();
   return (
     <View
       className="flex-row items-center bg-card"
@@ -274,7 +279,7 @@ function RecordCard({ item }: { item: RecordItem }) {
         borderRadius: 14,
         paddingHorizontal: 14,
         paddingVertical: 12,
-        shadowColor: BRAND.dark,
+        shadowColor: palette.brand,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.06,
         shadowRadius: 8,
@@ -286,7 +291,7 @@ function RecordCard({ item }: { item: RecordItem }) {
           width: 34,
           height: 34,
           borderRadius: 10,
-          backgroundColor: BRAND.stripeBg,
+          backgroundColor: palette.stripeBg,
         }}>
         <Text className="text-base">{item.emoji}</Text>
       </View>
@@ -331,6 +336,7 @@ function DiaryCard({ entry }: { entry: DiaryEntry }) {
 }
 
 function BottomCta({ bottomInset }: { bottomInset: number }) {
+  const palette = useBrandColor();
   return (
     <View
       style={{
@@ -338,9 +344,9 @@ function BottomCta({ bottomInset }: { bottomInset: number }) {
         bottom: 0,
         left: 0,
         right: 0,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: palette.surface,
         borderTopWidth: 1,
-        borderTopColor: 'rgba(54, 81, 84, 0.08)',
+        borderTopColor: palette.subtleStrong,
         paddingHorizontal: SCREEN_PADDING,
         paddingTop: BOTTOM_CTA_VERTICAL,
         paddingBottom: BOTTOM_CTA_VERTICAL + bottomInset,
@@ -349,7 +355,7 @@ function BottomCta({ bottomInset }: { bottomInset: number }) {
         accessibilityRole="button"
         accessibilityLabel="오늘 일기 쓰기"
         className="flex-row items-center justify-center rounded-2xl"
-        style={{ backgroundColor: BRAND.dark, paddingVertical: 14, gap: 6 }}>
+        style={{ backgroundColor: palette.brand, paddingVertical: 14, gap: 6 }}>
         <Text className="text-[14px]">📝</Text>
         <Text className="text-[14.5px] font-bold text-primary-foreground">오늘 일기 쓰기</Text>
       </Pressable>
